@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Citation } from '../types';
 import { X, ExternalLink, ChevronLeft, ChevronRight, FileText, BookOpen } from 'lucide-react';
+import { resolveSourceUrl, cleanDocumentName } from '../utils/sourceUrls';
 
 interface CitationModalProps {
   citation: Citation | null;
@@ -19,14 +20,11 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
 
   if (!isOpen || !citation) return null;
 
-  const pdfUrl = `sources/${citation.document}#page=${currentPage}`;
-  const fullWindowUrl = `sources/${citation.document}#page=${currentPage}`;
+  const pdfUrl = resolveSourceUrl(citation.document, currentPage, citation.type, citation.slide);
+  const fullWindowUrl = resolveSourceUrl(citation.document, currentPage, citation.type, citation.slide);
 
   const isLecture = citation.type === 'lecture';
-  const docDisplayName = citation.document
-    .replace('Recommended_Readings/', '')
-    .replace('.pdf', '')
-    .replace(/_/g, ' ');
+  const docDisplayName = citation.title || cleanDocumentName(citation.document);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {

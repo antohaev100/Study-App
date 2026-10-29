@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { QuestionEntry, Alternative, SubQuestion, Citation } from '../types';
 import { RichContent } from './RichContent';
+import { resolveSourceUrl } from '../utils/sourceUrls';
 import {
   Copy,
   Check,
@@ -74,7 +75,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           entryParts.push(`  Model Answer:\n  ${sub.lecture_explanation.trim()}`);
           if (sub.lecture_citations && sub.lecture_citations.length > 0) {
             const cites = sub.lecture_citations
-              .map((c) => `[${c.label}](sources/${c.document}#page=${c.page})`)
+              .map((c) => `[${c.label}](${resolveSourceUrl(c.document, c.page, c.type, c.slide)})`)
               .join(', ');
             entryParts.push(`  Citations: ${cites}`);
           }
@@ -84,7 +85,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           entryParts.push(`  Literature Addition:\n  ${sub.RR_addition.trim()}`);
           if (sub.literature_citations && sub.literature_citations.length > 0) {
             const cites = sub.literature_citations
-              .map((c) => `[${c.label}](sources/${c.document}#page=${c.page})`)
+              .map((c) => `[${c.label}](${resolveSourceUrl(c.document, c.page, c.type, c.slide)})`)
               .join(', ');
             entryParts.push(`  Literature Citations: ${cites}`);
           }
@@ -104,7 +105,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           entryParts.push(`  Lecture Explanation:\n  ${alt.lecture_explanation.trim()}`);
           if (alt.lecture_citations && alt.lecture_citations.length > 0) {
             const cites = alt.lecture_citations
-              .map((c) => `[${c.label}](sources/${c.document}#page=${c.page})`)
+              .map((c) => `[${c.label}](${resolveSourceUrl(c.document, c.page, c.type, c.slide)})`)
               .join(', ');
             entryParts.push(`  Citations: ${cites}`);
           }
@@ -114,7 +115,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           entryParts.push(`  Literature Addition:\n  ${alt.RR_addition.trim()}`);
           if (alt.literature_citations && alt.literature_citations.length > 0) {
             const cites = alt.literature_citations
-              .map((c) => `[${c.label}](sources/${c.document}#page=${c.page})`)
+              .map((c) => `[${c.label}](${resolveSourceUrl(c.document, c.page, c.type, c.slide)})`)
               .join(', ');
             entryParts.push(`  Literature Citations: ${cites}`);
           }
@@ -175,7 +176,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const allRevealed =
     itemCount > 0 && Array.from({ length: itemCount }).every((_, i) => revealedStates[i]);
 
-  const examPdfPath = `exams_clean/${question.exam}.pdf`;
+  const examPdfPath = `exams/${question.exam}.pdf`;
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 max-w-5xl mx-auto w-full flex flex-col gap-5">

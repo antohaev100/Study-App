@@ -1,14 +1,14 @@
 import { RawExamBlock } from '../types';
 
 /**
- * Loads all exam question JSON files dynamically from src/data/exams/.
+ * Loads all exam question JSON files dynamically from src/data/exam_answers/ (or legacy src/data/exams/).
  * Vite's import.meta.glob ensures all exam files are bundled and inlined
  * directly into dist/index.html when building single-file standalone distribution.
- *
- * It dynamically discovers any .json file located in src/data/exams/ (including subdirectories).
  */
 const examModules = import.meta.glob<{ default: RawExamBlock | RawExamBlock[] }>(
   [
+    '../data/exam_answers/*.json',
+    '../data/exam_answers/**/*.json',
     '../data/exams/*.json',
     '../data/exams/**/*.json',
   ],
@@ -25,8 +25,8 @@ export function getAllExamBlocks(): RawExamBlock[] {
     
     for (const block of items) {
       if (block.exam && Array.isArray(block.questions)) {
-        // Keep the first or prefer top-level file
-        if (!blocksMap.has(block.exam) || path.includes('/exam_') || path.includes('/exams/')) {
+        // Keep the first or prefer exam_answers file
+        if (!blocksMap.has(block.exam) || path.includes('/exam_answers/') || path.includes('/exam_') || path.includes('/exams/')) {
           blocksMap.set(block.exam, block);
         }
       }

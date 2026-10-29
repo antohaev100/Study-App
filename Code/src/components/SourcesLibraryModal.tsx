@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { X, BookOpen, FileText, GraduationCap, ArrowUpRight } from 'lucide-react';
 import { Citation } from '../types';
+import { resolveSourceUrl } from '../utils/sourceUrls';
 
 interface SourcesLibraryModalProps {
   isOpen: boolean;
@@ -215,7 +216,7 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
                         View in App
                       </button>
                       <a
-                        href={`sources/${item.document}#page=${item.page}`}
+                        href={resolveSourceUrl(item.document, item.page, item.type)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-[0.72rem] text-slate-500 hover:text-slate-800 font-medium px-2 py-1 rounded hover:bg-slate-100 transition"
@@ -276,7 +277,7 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
                         View in App
                       </button>
                       <a
-                        href={`sources/${item.document}#page=${item.page}`}
+                        href={resolveSourceUrl(item.document, item.page, item.type)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-[0.72rem] text-slate-500 hover:text-slate-800 font-medium px-2 py-1 rounded hover:bg-slate-100 transition"

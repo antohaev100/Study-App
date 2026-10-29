@@ -34,14 +34,17 @@ Comprehensive question-by-question practice interface supporting multiple-choice
 
 The application source code is completely course-neutral with zero hardcoded course codes or subject-specific assumptions. You can adapt the app to any course by updating the JSON files in `src/data/`:
 
-| JSON File | Purpose | Template Available |
+| JSON / Asset Location | Purpose | Template Available |
 | :--- | :--- | :--- |
 | `src/data/course_guide.json` | Drives the Course Topic Guide view (sections, topics, descriptions, exam question mappings). | `course_topic_guide_template.json` |
-| `src/data/exams/*.json` | Questions, options, model answers, explanations, citations, and abbreviations. | `question_template.json` |
+| `src/data/exam_answers/*.json` | Questions, options, model answers, explanations, citations, and abbreviations. | `question_template.json` |
+| `src/data/exams/*.pdf` | Original clean exam question paper PDFs. Automatically copied to `dist/exams/` on build. | — |
 | `src/data/slides_index.json` | Index of lecture slide decks, mapping slide numbers to PDF files, page numbers, and slide titles. | `slides_index_template.json` |
 | `src/data/rr_index.json` | Index of supplementary literature / Recommended Readings with page maps. | `rr_index_template.json` |
+| `src/data/lectures/` | Lecture slide deck PDFs (e.g., `lectures.pdf`). Automatically copied to `dist/lectures/` on build. | — |
+| `src/data/RR/` | Recommended Readings research papers and RFC PDFs. Automatically copied to `dist/RR/` on build. | — |
 
-> **Note on Data vs. Code Separation**: All TypeScript code has been cleanly separated into `src/utils/` (`loadExams.ts`, `topicStructure.ts`). The entire `src/data/` folder is dedicated strictly to data JSON files and is gitignored, allowing you to freely add, update, or regenerate course data without modifying git-tracked source code.
+> **Note on Data vs. Code Separation**: All TypeScript code has been cleanly separated into `src/utils/` (`loadExams.ts`, `topicStructure.ts`, `sourceUrls.ts`). The entire `src/data/` folder is dedicated strictly to course data and source PDFs, and is gitignored so you can add, update, or regenerate course data without polluting git. During `npm run build`, all PDFs are automatically copied 1:1 into `dist/` (`dist/lectures/`, `dist/RR/`, `dist/exams/`) with zero duplication alongside the single-file `dist/index.html`. In `npm run dev`, Vite middleware serves them directly from `src/data/`.
 
 ---
 
