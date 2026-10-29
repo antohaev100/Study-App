@@ -1,0 +1,59 @@
+{
+  "_comment": "Course Study App — Recommended Readings (RR) Literature Index Template. If your course does NOT use supplementary readings or literature, set this entire file to an empty object '{}'. When configured, each top-level key corresponds to a PDF filename in the 'sources/' or 'sources/Recommended_Readings/' folder.",
+  "Research_Survey_2024.pdf": {
+    "title": "A Survey of Modern Network Architectures and Protocols",
+    "author": "Alice Smith, Bob Jones (2024)",
+    "description": "Comprehensive comparative survey analyzing SDN control plane scalability, programmable data planes, and high-performance packet processing pipelines.",
+    "pages": 18,
+    "pageMap": [
+      {
+        "page": 1,
+        "headings": [
+          "I. Introduction",
+          "Section I.A: Historical Background"
+        ]
+      },
+      {
+        "page": 2,
+        "headings": [
+          "II. Architectural Models",
+          "Section II.B: Control vs Data Planes"
+        ]
+      },
+      {
+        "page": 5,
+        "headings": [
+          "III. Performance Benchmarks and Trade-offs"
+        ]
+      },
+      {
+        "page": 10,
+        "headings": [
+          "IV. Future Trends and Open Challenges",
+          "Section IV.C: Scalability Limits"
+        ]
+      }
+    ]
+  },
+  "Industry_Standard_RFC9999.pdf": {
+    "title": "RFC 9999 — Standard Encapsulation and Framing Protocol",
+    "author": "IETF Working Group",
+    "description": "Protocol specification detailing header layouts, packet formats, encapsulation rules, and hardware acceleration offloads.",
+    "pages": 12,
+    "pageMap": [
+      {
+        "page": 1,
+        "headings": [
+          "1. Status of This Memo",
+          "2. Protocol Specification"
+        ]
+      },
+      {
+        "page": 4,
+        "headings": [
+          "3. Header Formats and Bit-field Alignment"
+        ]
+      }
+    ]
+  }
+}

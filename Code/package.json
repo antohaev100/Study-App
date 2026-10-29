@@ -1,0 +1,33 @@
+{
+  "name": "course-study-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "katex": "^0.16.21",
+    "lucide-react": "^0.475.0",
+    "marked": "^15.0.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/katex": "^0.16.7",
+    "@types/node": "^22.13.1",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.4.5",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.3",
+    "vite-plugin-singlefile": "^2.3.4"
+  }
+}

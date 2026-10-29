@@ -1,0 +1,31 @@
+{
+  "_comment": "Course Study App — Slide Deck Index Template. Use this file to map slide numbers to PDF files, PDF page numbers, slide titles, and topic sections. The keys in this JSON object are sequential slide numbers (as strings, e.g. '1', '2', '3') or custom slide IDs referenced by exam questions and topic guides.",
+  "1": {
+    "document": "Lectures_Part1.pdf",
+    "slide": 1,
+    "page": 1,
+    "title": "Course Introduction and Overview",
+    "section": "Module 1: Foundations"
+  },
+  "2": {
+    "document": "Lectures_Part1.pdf",
+    "slide": 2,
+    "page": 2,
+    "title": "Architectural Principles and Core Abstractions",
+    "section": "Module 1: Foundations"
+  },
+  "3": {
+    "document": "Lectures_Part1.pdf",
+    "slide": 3,
+    "page": 3,
+    "title": "Layering, Decoupling, and Interfaces",
+    "section": "Module 1: Foundations"
+  },
+  "50": {
+    "document": "Lectures_Part2.pdf",
+    "slide": 50,
+    "page": 1,
+    "title": "Advanced Topics and Implementation Strategies",
+    "section": "Module 2: Advanced Concepts"
+  }
+}

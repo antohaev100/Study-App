@@ -1,0 +1,7 @@
+node_modules
+.aistudio
+.vscode
+dist
+src/data/
+dist
+src/data/

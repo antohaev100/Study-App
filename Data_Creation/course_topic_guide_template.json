@@ -1,0 +1,139 @@
+{
+  "$schema_description": "Comprehensive JSON Template for Course Topic Guide (Blueprint View). Use this file as a prompt/schema source for generating curriculum guides for ANY university course (e.g., Operating Systems, Databases, Distributed Systems, Networking, Algorithms). Do NOT embed full question/answer texts here; instead, link to existing exam entries via 'examReferences'.",
+  "course": {
+    "code": "EXPLANATION: Official course code string (e.g. 'DVAD20', 'CS301', 'COMP4100')",
+    "title": "EXPLANATION: Full official course name (e.g. 'Advanced Computer Networking')",
+    "subtitle": "EXPLANATION: Key thematic focus areas of the course (e.g. 'Software-Defined Networking, NFV & Data Center Fabrics')",
+    "description": "EXPLANATION: 1-2 sentence overview of the study curriculum scope, target outcomes, and pedagogical objectives."
+  },
+  "cheatSheet": {
+    "numericalLimits": [
+      {
+        "label": "EXPLANATION: Name of constant, port, header field, or numerical limit (e.g. 'OpenFlow Port', 'VLAN Segment Limit')",
+        "value": "EXPLANATION: Precise value or limit string with unit (e.g. '6653', '4,096 segments', '50 Bytes')",
+        "detail": "EXPLANATION: Brief context or specification standard (e.g. 'TCP/TLS (IANA Standard)', '12-bit header field in 802.1Q')"
+      }
+    ],
+    "whyQuestions": [
+      {
+        "question": "EXPLANATION: Recurring, high-frequency theoretical exam question asking 'Why' or 'How' (e.g. 'Why does DPDK use Poll-Mode Drivers instead of interrupts?')",
+        "answer": "EXPLANATION: Crisp, high-yield 1-2 sentence model explanation establishing causal chain: Claim → Underlying Mechanism → System Consequence."
+      }
+    ],
+    "technologyTriads": [
+      {
+        "category": "EXPLANATION: Title of comparative hierarchy or taxonomy (e.g. 'Virtual Switch Acceleration Hierarchy', 'Cache Coherence Protocols')",
+        "items": [
+          "EXPLANATION: Bullet point describing tier 1 with mechanism and tradeoff",
+          "EXPLANATION: Bullet point describing tier 2 with mechanism and tradeoff",
+          "EXPLANATION: Bullet point describing tier 3 with mechanism and tradeoff"
+        ]
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "EXPLANATION: Unique URL-safe identifier string (e.g. 'sec-1', 'sec-operating-systems-memory')",
+      "number": "EXPLANATION: Chapter or module number string (e.g. '1', '2', 'Part A')",
+      "title": "EXPLANATION: Clear descriptive chapter title (e.g. 'Software-Defined Networking Architecture & Planes')",
+      "subtitle": "EXPLANATION: 1-line conceptual subtitle (e.g. 'Decoupling Control and Data Planes, Global State & Modern APIs')",
+      "summary": "EXPLANATION: 1-2 sentence chapter summary describing core problems solved by this module.",
+      "badge": "EXPLANATION: Visual category badge label (e.g. 'Core Paradigm', 'High Frequency', 'Foundations', 'Next-Gen Hardware')",
+      "topics": [
+        {
+          "id": "EXPLANATION: Unique topic ID string (e.g. 'topic-1-1', 'topic-virtual-memory-paging')",
+          "code": "EXPLANATION: Academic numbering code (e.g. '1.1', '1.2', '6.8')",
+          "title": "EXPLANATION: Topic title (e.g. 'SDN Defining Characteristics & Architectural Pillars')",
+          "summary": "EXPLANATION: 1-sentence crisp summary of what the student must master.",
+          "badge": "EXPLANATION: Optional topic priority badge (e.g. 'High Frequency', 'Exam Critical', 'Silicon Design')",
+          "plainWords": "EXPLANATION: Everyday mental model and intuitive real-world analogy. Start with 'Think of...' to explain the abstract concept through an everyday mechanical, organizational, or physical system (e.g. Air traffic control tower, restaurant kitchen, airport baggage conveyor, postal delivery system). This combats cognitive overload.",
+          "keyTakeaway": "EXPLANATION: High-yield examiner tips, common student misconceptions, or traps specifically tested in exam rubrics.",
+          "infoNeeded": [
+            {
+              "title": "EXPLANATION: Section title for this knowledge block (e.g. 'The Three Core Pillars of SDN')",
+              "points": [
+                "EXPLANATION: Bullet point containing exact technical definitions, mechanisms, and causal rules.",
+                "EXPLANATION: Bullet point highlighting key protocol fields, algorithms, or architectural steps."
+              ]
+            },
+            {
+              "title": "EXPLANATION: Optional comparison table title (e.g. 'Architectural Comparison: Traditional vs. Software-Defined')",
+              "table": {
+                "headers": ["EXPLANATION: Column 1 (e.g. Dimension)", "EXPLANATION: Column 2 (e.g. Architecture A)", "EXPLANATION: Column 3 (e.g. Architecture B)"],
+                "rows": [
+                  ["EXPLANATION: Row 1 Attribute", "EXPLANATION: Arch A behavior", "EXPLANATION: Arch B behavior"],
+                  ["EXPLANATION: Row 2 Attribute", "EXPLANATION: Arch A behavior", "EXPLANATION: Arch B behavior"]
+                ]
+              }
+            },
+            {
+              "title": "EXPLANATION: Optional mathematical or protocol formula block",
+              "formula": "EXPLANATION: LaTeX or text formula (e.g. 'BDP = Bandwidth × RTT' or 'Total MTU Overhead = 50 Bytes')"
+            }
+          ],
+          "examReferences": [
+            {
+              "exam": "EXPLANATION: Exam session code matching the filename exam_<ID>.json (e.g. '260610', '251107')",
+              "questionNumber": "EXPLANATION: Exact question number string as found in the exam JSON (e.g. '1', '2', '3')",
+              "note": "EXPLANATION: Optional brief note on which aspect of this topic is assessed (e.g. 'Tests northbound vs southbound API distinction')"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sec-example-real",
+      "number": "Example Section",
+      "title": "Example Real Chapter Entry: Virtual Memory & Address Translation",
+      "subtitle": "Virtual Address Spaces, Paging, Page Faults, and TLB Hardware",
+      "summary": "Hardware and operating system memory management mechanisms providing isolated virtual address spaces per process.",
+      "badge": "Core OS Concept",
+      "topics": [
+        {
+          "id": "topic-example-paging",
+          "code": "1.1",
+          "title": "Paging, Multi-Level Page Tables & The TLB",
+          "summary": "Translating virtual addresses to physical frames with hardware cache acceleration.",
+          "badge": "High Frequency",
+          "plainWords": "Think of a Library Catalog and Secret Agent P.O. Boxes: Every student (process) is given an identical notebook numbered pages 1 to 1,000 (virtual addresses). But in reality, the books are stored across 10 random warehouses in different cities (physical RAM frames). The library index desk is the Page Table. The Translation Lookaside Buffer (TLB) is a sticky note on the librarian's desk with the 16 most recently looked-up book locations: if your book is on the sticky note (TLB hit), you get it in 1 second; if not (TLB miss), the librarian must walk into the back archive to read the multi-level card index.",
+          "keyTakeaway": "Remember that TLB misses can be handled either in hardware (x86 MMU walking page tables) or in software (MIPS/RISC-V OS trap). A Page Fault is fundamentally different from a TLB miss: a TLB miss is a quick hardware cache miss, while a page fault requires disk I/O to swap a missing page into RAM.",
+          "infoNeeded": [
+            {
+              "title": "Virtual to Physical Address Translation Steps",
+              "points": [
+                "Virtual Address Decomposition: Split into Virtual Page Number (VPN) and Page Offset based on page size (e.g., 12-bit offset for 4KB pages).",
+                "TLB Lookup: MMU inspects TLB associative cache using the VPN. On a hit, physical frame number (PFN) is concatenated with the offset immediately.",
+                "Page Table Walk: On a TLB miss, the MMU or OS walks the multi-level page table using CR3/page directory pointers.",
+                "Page Fault Handling: If the Present/Valid bit in the page table entry (PTE) is 0, a page fault exception triggers the OS kernel to fetch the page from swap disk."
+              ]
+            },
+            {
+              "title": "Comparison: TLB Miss vs. Page Fault",
+              "table": {
+                "headers": ["Metric", "TLB Miss", "Page Fault"],
+                "rows": [
+                  ["Cause", "Virtual page translation not cached in CPU TLB", "Referenced page is not present in physical RAM (on swap)"],
+                  ["Handled By", "MMU hardware page table walker or lightweight trap", "Operating System kernel page fault interrupt handler"],
+                  ["Typical Latency", "10 to 50 nanoseconds (RAM walk)", "1 to 10 milliseconds (SSD/Disk swap read)"],
+                  ["CPU Context Switch", "None (pipeline stall)", "Yes (thread is put to sleep while disk I/O completes)"]
+                ]
+              }
+            }
+          ],
+          "examReferences": [
+            {
+              "exam": "260610",
+              "questionNumber": "7",
+              "note": "Assesses TLB and hugepage memory allocation under high packet rates"
+            },
+            {
+              "exam": "250107",
+              "questionNumber": "3",
+              "note": "Tests kernel bypass vs memory mapping optimizations"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

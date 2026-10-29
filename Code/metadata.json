@@ -1,0 +1,8 @@
+{
+  "name": "DVAD20 Exam & Quiz Study App",
+  "description": "Interactive study app for DVAD20 exam preparation featuring browse mode, timed study sessions, rich KaTeX and Markdown formatting, question notes, and detailed explanations.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
