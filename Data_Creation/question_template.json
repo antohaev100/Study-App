@@ -1,9 +1,15 @@
 {
+  "$schema_description": "Production Exam Answers Template. Defines solved exam questions with Markdown and KaTeX math support across all text fields.",
+  "markdown_and_latex_support": {
+    "note": "ALL TEXTUAL FIELDS SUPPORT FULL GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$' (NEVER '$\\alpha$' with a single backslash, which is an illegal JSON escape), write '$\\text{ms}$' (NEVER '$\\text{ms}$', which converts '\\t' into a tab character), and write '$$\\frac{a}{b}$$' (NEVER '$$\\frac{a}{b}$$', which converts '\\f' into a form feed character). Prefer '$...$' and '$$...$$' delimiters to avoid delimiter escaping errors in JSON."
+  },
   "exam": "EXAM_ID (String: A 6-digit exam date/code, e.g. '250107', '250613', '251107', '260108', or '260610')",
   "questions": [
     {
       "_comment": "TEMPLATE 1: MULTIPLE CHOICE QUESTION",
       "number": "INSTRUCTION: The question number formatted as a string (e.g., '1', '2', '10'). Must match the sequence in the exam paper.",
+      "topic": "INSTRUCTION: The unique topic ID string (e.g., 'topic-1-1', 'topic-fate-sharing', 'topic-aqm-principles'). MUST match an existing topic 'id' from the provided question topics JSON.",
       "type": "INSTRUCTION: The question format type. Allowed values: 'multiple_choice' or 'written'. Must be 'multiple_choice' for this template.",
       "points": "INSTRUCTION: Positive number (integer or float, e.g., 2, 3, 1.5) representing the maximum points awarded for this question.",
       "question": "MARKDOWN FIELD: The exact question prompt from the exam. This field supports full GitHub-flavored Markdown and KaTeX math formulas. You can use **bold**, *italics*, inline code `code`, lists (- item), and LaTeX math syntax ($inline$ or $$display$$). Do not include multiple-choice alternatives inside this field; alternatives must be placed in the 'alternatives' array below.",
@@ -11,7 +17,7 @@
         {
           "text": "MARKDOWN FIELD: The exact text of the alternative option as presented in the exam. This field supports full Markdown and KaTeX math ($...$), e.g., inline code `header_field`, math notation $2^{24}$, or bold terms.",
           "is_correct": "INSTRUCTION: A strict boolean (true if the alternative statement is correct according to the exam key, false if it is incorrect). Do not use strings 'true' or 'false'.",
-          "lecture_explanation": "MARKDOWN FIELD: A rigorous technical explanation justifying WHY the statement is True or False. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bold** for key architectural concepts, planes, and protocols. 2. Use inline backticks `code` for functions, instruction names (e.g. `OFPIT_APPLY_ACTIONS`, `GOTO_TABLE`), packet headers, registers, or kernel structures (`sk_buff`, `rte_mempool`). 3. Use bullet points (- item) or numbered lists (1. item) when explaining multi-stage pipeline sequences or operational steps. 4. Use LaTeX math ($...$) for formulas and complexity ($O(1)$, $k$-port switch). CONTENT RULES: Explain the technical mechanics (protocol boundaries, hardware ASIC pipelines vs software forwarding, state machines, memory limits). STRICT PROHIBITION: Never say 'In the lectures', 'Slide X states', or leave empty parentheses '()'. State the facts directly.",
+          "lecture_explanation": "MARKDOWN FIELD: A rigorous technical explanation justifying WHY the statement is True or False. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bold** for key architectural concepts, planes, and protocols. 2. Use inline backticks `code` for functions, instruction names (e.g. `OFPIT_APPLY_ACTIONS`, `GOTO_TABLE`), packet headers, registers, or kernel structures (`sk_buff`, `rte_mempool`). 3. Use bullet points (- item) or numbered lists (1. item) when explaining multi-stage pipeline sequences or operational steps. 4. Use LaTeX math ($inline$ or $$display$$) with MANDATORY double-escaped backslashes (e.g., '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', '$O(M \\times N)$'). Never write unescaped '\\t' or '\\f'. CONTENT RULES: Explain the technical mechanics (protocol boundaries, hardware ASIC pipelines vs software forwarding, state machines, memory limits). STRICT PROHIBITION: Never say 'In the lectures', 'Slide X states', or leave empty parentheses '()'. State the facts directly.",
           "lecture_citations": [
             {
               "document": "INSTRUCTION: The exact lecture slide deck filename. Allowed values: 'Lectures_DVAD20_part1.pdf' (for slides 1 to 150) or 'Lectures_DVAD20_part2.pdf' (for slides 151 to 299).",
@@ -22,7 +28,7 @@
               "type": "lecture"
             }
           ],
-          "RR_addition": "MARKDOWN FIELD: A true, non-repetitive supplementary engineering addition drawing from the Recommended Readings research papers. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bolding** for core terms and architectural paradigms. 2. Use inline backticks `code` for protocol commands, registers, and parameters. 3. Use bulleted lists (- item) to structure trade-offs or design considerations. 4. Use LaTeX math ($...$) for mathematical bounds ($2^{24}$, $k^3/4$). CONTENT RULES: 1. Must be a genuine addition and NEVER repeat or paraphrase the lecture explanation. 2. Provide deeper systems depth: hardware trade-offs (TCAM vs SRAM lookup tables, PCIe bus saturation, DMA ring buffers, CPU context-switch latency, cache invalidation, hugepages), historical drivers (network ossification, vendor lock-in), standards evolution (OpenFlow 1.0 single flat table explosion to OpenFlow 1.3+ multi-table pipelining to P4 protocol independence), or empirical findings. STRICT PROHIBITION: Do NOT write 'According to the paper...' or mention raw filenames in the text.",
+          "RR_addition": "MARKDOWN FIELD: A true, non-repetitive supplementary engineering addition drawing from the Recommended Readings research papers. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bolding** for core terms and architectural paradigms. 2. Use inline backticks `code` for protocol commands, registers, and parameters. 3. Use bulleted lists (- item) to structure trade-offs or design considerations. 4. Use LaTeX math ($...$) with double-escaped backslashes (e.g. '$2^{24}$', '$\\approx$', '$O(M \\times N)$'). CONTENT RULES: 1. Must be a genuine addition and NEVER repeat or paraphrase the lecture explanation. 2. Provide deeper systems depth: hardware trade-offs (TCAM vs SRAM lookup tables, PCIe bus saturation, DMA ring buffers, CPU context-switch latency, cache invalidation, hugepages), historical drivers (network ossification, vendor lock-in), standards evolution (OpenFlow 1.0 single flat table explosion to OpenFlow 1.3+ multi-table pipelining to P4 protocol independence), or empirical findings. STRICT PROHIBITION: Do NOT write 'According to the paper...' or mention raw filenames in the text.",
           "literature_citations": [
             {
               "document": "INSTRUCTION: Relative path to the cited paper within Recommended_Readings/. Allowed values: 'Recommended_Readings/RR_SDN_Feamster14.pdf' (12 pages), 'Recommended_Readings/RR_SDN_Nunez23.pdf' (6 pages), 'Recommended_Readings/RR_SDN_Hauser21.pdf' (141 pages), 'Recommended_Readings/RR_DCN_Zhang13.pdf' (26 pages), 'Recommended_Readings/RR_NFV_Mijumbi16.pdf' (27 pages), 'Recommended_Readings/RR_NFV_Nobach18.pdf' (8 pages), 'Recommended_Readings/RR_NV_Intel_Virtualization_Technology_for_Connectivity.pdf' (4 pages), 'Recommended_Readings/RR_NV_VXLAN.pdf' (9 pages).",
@@ -45,6 +51,7 @@
     {
       "_comment": "TEMPLATE 2: WRITTEN QUESTION",
       "number": "INSTRUCTION: The question number formatted as a string (e.g., '2', '5', '12'). Must match the sequence in the exam paper.",
+      "topic": "INSTRUCTION: The unique topic ID string (e.g., 'topic-2-1', 'topic-codel-mechanisms', 'topic-mptcp-schedulers'). MUST match an existing topic 'id' from the provided question topics JSON.",
       "type": "INSTRUCTION: The question format type. Allowed values: 'multiple_choice' or 'written'. Must be 'written' for this template.",
       "points": "INSTRUCTION: Positive number (integer or float, e.g., 4, 6, 2.5) representing the total points for the entire question entry.",
       "context": "MARKDOWN FIELD: Shared scenario, background description, or preamble applying to the subquestions below. Supports full GitHub-flavored Markdown and KaTeX math ($inline$ or $$display$$). Leave as an empty string '' if this entry is a single standalone question or has no shared preamble.",
@@ -53,7 +60,7 @@
           "label": "INSTRUCTION: Subquestion identifier string (e.g., 'a', 'b', 'c', 'i', 'ii'). Leave as an empty string '' if the written question consists of only a single question.",
           "points": "INSTRUCTION: Positive number (integer or float, e.g., 2, 1.5) for this specific subquestion, OR null if subquestion points are not specified on the exam or if this is a single question whose points are already defined at the parent level.",
           "question": "MARKDOWN FIELD: The exact prompt for this subquestion (or the main question prompt if there is only a single question in this array). Supports full GitHub-flavored Markdown and KaTeX math formulas ($inline$ or $$display$$).",
-          "lecture_explanation": "MARKDOWN FIELD: A comprehensive, structured model answer addressing this question/subquestion based on course lecture material. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bold** for key architectural concepts, planes, and protocols. 2. Use inline backticks `code` for functions, instruction names, packet headers, registers, or kernel structures. 3. Use bullet points (- item) or numbered lists (1. item) to structure operational steps. 4. Use LaTeX math ($...$) for formulas and complexity bounds. STRICT PROHIBITION: Never say 'In the lectures', 'Slide X states', or leave empty parentheses '()'. State the facts directly.",
+          "lecture_explanation": "MARKDOWN FIELD: A comprehensive, structured model answer addressing this question/subquestion based on course lecture material. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bold** for key architectural concepts, planes, and protocols. 2. Use inline backticks `code` for functions, instruction names, packet headers, registers, or kernel structures. 3. Use bullet points (- item) or numbered lists (1. item) to structure operational steps. 4. Use LaTeX math ($...$ or $$...$$) with MANDATORY double-escaped backslashes (e.g. '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$'). STRICT PROHIBITION: Never say 'In the lectures', 'Slide X states', or leave empty parentheses '()'. State the facts directly.",
           "lecture_citations": [
             {
               "document": "INSTRUCTION: The exact lecture slide deck filename. Allowed values: 'Lectures_DVAD20_part1.pdf' (for slides 1 to 150) or 'Lectures_DVAD20_part2.pdf' (for slides 151 to 299).",
@@ -64,7 +71,7 @@
               "type": "lecture"
             }
           ],
-          "RR_addition": "MARKDOWN FIELD: A true, non-repetitive supplementary engineering addition drawing from the Recommended Readings research papers that deepens the model answer. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bolding** for core terms and architectural paradigms. 2. Use inline backticks `code` for protocol commands, registers, and parameters. 3. Use bulleted lists (- item) to structure trade-offs or design considerations. 4. Use LaTeX math ($...$) for mathematical bounds. CONTENT RULES: Must be a genuine addition and NEVER repeat or paraphrase the lecture explanation. Provide deeper systems depth (hardware constraints, memory hierarchy, standards evolution, or empirical trade-offs). STRICT PROHIBITION: Do NOT write 'According to the paper...' or mention raw filenames in the text.",
+          "RR_addition": "MARKDOWN FIELD: A true, non-repetitive supplementary engineering addition drawing from the Recommended Readings research papers that deepens the model answer. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bolding** for core terms and architectural paradigms. 2. Use inline backticks `code` for protocol commands, registers, and parameters. 3. Use bulleted lists (- item) to structure trade-offs or design considerations. 4. Use LaTeX math ($...$) with double-escaped backslashes (e.g. '$2^{24}$', '$O(M \\times N)$'). CONTENT RULES: Must be a genuine addition and NEVER repeat or paraphrase the lecture explanation. Provide deeper systems depth (hardware constraints, memory hierarchy, standards evolution, or empirical trade-offs). STRICT PROHIBITION: Do NOT write 'According to the paper...' or mention raw filenames in the text.",
           "literature_citations": [
             {
               "document": "INSTRUCTION: Relative path to the cited paper within Recommended_Readings/. Allowed values: 'Recommended_Readings/RR_SDN_Feamster14.pdf' (12 pages), 'Recommended_Readings/RR_SDN_Nunez23.pdf' (6 pages), 'Recommended_Readings/RR_SDN_Hauser21.pdf' (141 pages), 'Recommended_Readings/RR_DCN_Zhang13.pdf' (26 pages), 'Recommended_Readings/RR_NFV_Mijumbi16.pdf' (27 pages), 'Recommended_Readings/RR_NFV_Nobach18.pdf' (8 pages), 'Recommended_Readings/RR_NV_Intel_Virtualization_Technology_for_Connectivity.pdf' (4 pages), 'Recommended_Readings/RR_NV_VXLAN.pdf' (9 pages).",
@@ -87,6 +94,7 @@
     {
       "_comment": "EXAMPLE 1: MULTIPLE CHOICE QUESTION",
       "number": "1",
+      "topic": "topic-sdn-architecture",
       "type": "multiple_choice",
       "points": 3,
       "question": "Which of the following statements correctly describes characteristics of **Software-Defined Networking (SDN)**?",
@@ -382,6 +390,7 @@
     {
       "_comment": "EXAMPLE 2: WRITTEN QUESTION",
       "number": "2",
+      "topic": "topic-sdn-flow-installation",
       "type": "written",
       "points": 4,
       "context": "An enterprise data center is migrating its switching fabric to an OpenFlow-based **Software-Defined Networking (SDN)** architecture. The network architect must decide how the SDN controller populates match-action flow tables in the hardware switches.",

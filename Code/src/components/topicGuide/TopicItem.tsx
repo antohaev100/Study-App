@@ -131,7 +131,7 @@ export const TopicItem: React.FC<TopicItemProps> = ({
                 <Sparkles className="w-4 h-4 text-amber-600" />
                 <span>In Plain Words (Mental Model &amp; Analogy)</span>
               </div>
-              <p className="text-amber-950 leading-relaxed font-medium">{topic.plainWords}</p>
+              <RichContent content={topic.plainWords} className="text-amber-950 leading-relaxed font-medium text-xs" />
             </div>
           )}
 
@@ -150,7 +150,7 @@ export const TopicItem: React.FC<TopicItemProps> = ({
                     <ul className="space-y-1.5 list-disc list-inside text-slate-700 leading-relaxed">
                       {block.points.map((pt, pIdx) => (
                         <li key={pIdx}>
-                          <span className="font-normal">{pt}</span>
+                          <RichContent content={pt} className="inline text-slate-700 text-xs" />
                         </li>
                       ))}
                     </ul>
@@ -164,7 +164,7 @@ export const TopicItem: React.FC<TopicItemProps> = ({
                           <tr className="bg-purple-100/70 text-purple-950 font-bold">
                             {block.table.headers.map((h, hIdx) => (
                               <th key={hIdx} className="border border-slate-200 px-2.5 py-1.5">
-                                {h}
+                                <RichContent content={h} className="text-purple-950 font-bold text-xs" />
                               </th>
                             ))}
                           </tr>
@@ -174,7 +174,7 @@ export const TopicItem: React.FC<TopicItemProps> = ({
                             <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                               {row.map((cell, cIdx) => (
                                 <td key={cIdx} className="border border-slate-200 px-2.5 py-1.5 text-slate-800">
-                                  {cell}
+                                  <RichContent content={cell} className="text-slate-800 text-xs" />
                                 </td>
                               ))}
                             </tr>
@@ -185,8 +185,11 @@ export const TopicItem: React.FC<TopicItemProps> = ({
                   )}
 
                   {block.formula && (
-                    <div className="bg-purple-50 border border-purple-200 rounded p-2 text-center font-mono text-purple-900 font-bold">
-                      {block.formula}
+                    <div className="bg-purple-50 border border-purple-200 rounded p-2 text-center text-purple-900 font-bold">
+                      <RichContent
+                        content={block.formula.includes('$') || block.formula.includes('\\[') ? block.formula : `$$${block.formula}$$`}
+                        className="text-center font-bold text-xs"
+                      />
                     </div>
                   )}
                 </div>
@@ -200,7 +203,7 @@ export const TopicItem: React.FC<TopicItemProps> = ({
               <span className="font-bold uppercase text-[0.68rem] tracking-wider text-indigo-800 block">
                 Examiner Tip &amp; Common Pitfall
               </span>
-              <p className="mt-0.5 leading-relaxed">{topic.keyTakeaway}</p>
+              <RichContent content={topic.keyTakeaway} className="mt-0.5 leading-relaxed text-indigo-950 text-xs" />
             </div>
           )}
 

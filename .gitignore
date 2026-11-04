@@ -4,5 +4,9 @@ node_modules
 dist
 Code/node_modules
 Code/dist
-Code/src/data/
+Code/src/data/exam_answers/*
+Code/src/data/exams/*
+Code/src/data/lectures/*
+Code/src/data/RR/*
+Code/src/data/*.json
 *.txt

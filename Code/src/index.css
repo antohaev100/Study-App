@@ -16,13 +16,20 @@
   --orange: #e65100;
 }
 
-body {
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
   margin: 0;
   padding: 0;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg);
   color: var(--text);
-  min-height: 100vh;
 }
 
 /* KaTeX custom tweaks */

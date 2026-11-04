@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { rawExamBlocks } from './utils/loadExams';
 import { QuestionEntry, RawExamBlock, Citation } from './types';
 import { Header } from './components/Header';
@@ -25,6 +25,9 @@ function shuffleArray(len: number): number[] {
 }
 
 export default function App() {
+  const guideScrollRef = useRef<HTMLDivElement>(null);
+  const practiceScrollRef = useRef<HTMLDivElement>(null);
+
   // Flatten questions from raw json
   const entries: QuestionEntry[] = useMemo(() => {
     const flat: QuestionEntry[] = [];
@@ -39,6 +42,7 @@ export default function App() {
           id: `${examLabel}-${q.number}`,
           exam: examLabel,
           number: q.number || '?',
+          topic: q.topic || '',
           type: isWritten ? 'written' : 'multiple_choice',
           points: typeof q.points === 'number' && !isNaN(q.points) ? q.points : null,
           question: q.question || '',
@@ -363,7 +367,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#f4f6f8] text-[#2c3e50] overflow-hidden">
+    <div className="h-full flex flex-col bg-[#f4f6f8] text-[#2c3e50] overflow-hidden">
       {/* Top Navigation Bar */}
       <Header
         currentView={currentView}
@@ -391,8 +395,16 @@ export default function App() {
 
       {/* Main Workspace Area: Conditional between Topic Guide (Blueprint) and Exam Practice Mode */}
       {currentView === 'guide' ? (
-        <main className="flex-1 overflow-y-auto flex flex-col bg-[#f8fafc]">
+        <main
+          className="flex-1 min-h-0 h-full overflow-hidden flex flex-col bg-[#f8fafc]"
+          onWheel={(e) => {
+            if (guideScrollRef.current && e.target === e.currentTarget) {
+              guideScrollRef.current.scrollTop += e.deltaY;
+            }
+          }}
+        >
           <TopicGuideView
+            scrollRef={guideScrollRef}
             entries={entries}
             onOpenCitation={handleOpenCitation}
             onOpenSourcesLibrary={() => setIsSourcesLibraryOpen(true)}
@@ -420,8 +432,16 @@ export default function App() {
           />
 
           {/* Center Question View */}
-          <main className="flex-1 overflow-y-auto flex flex-col bg-[#f4f6f8]">
+          <main
+            className="flex-1 min-h-0 h-full overflow-hidden flex flex-col bg-[#f4f6f8]"
+            onWheel={(e) => {
+              if (practiceScrollRef.current && e.target === e.currentTarget) {
+                practiceScrollRef.current.scrollTop += e.deltaY;
+              }
+            }}
+          >
             <QuestionCard
+              scrollRef={practiceScrollRef}
               question={currentQuestion}
               revealedStates={revealedStates}
               onToggleAlternative={handleToggleAlternative}

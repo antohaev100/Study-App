@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
   const stage = getStage(qElapsed);
 
   return (
-    <header className="bg-white border-b border-[#e0e0e0] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs sticky top-0 z-30 select-none">
+    <header className="shrink-0 bg-white border-b border-[#e0e0e0] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs select-none">
       {/* View Mode Segmented Switcher & Exam Controls */}
       <div className="flex items-center flex-wrap gap-2 text-sm">
         {/* Main Mode Toggle: Topic Guide vs Exam Mode */}

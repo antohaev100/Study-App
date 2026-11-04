@@ -26,6 +26,7 @@ interface QuestionCardProps {
   onRevealAll: () => void;
   onResetRevealed: () => void;
   onOpenCitation: (citation: Citation) => void;
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -35,6 +36,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   onRevealAll,
   onResetRevealed,
   onOpenCitation,
+  scrollRef,
 }) => {
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedDetails, setExpandedDetails] = useState<Record<number, boolean>>({});
@@ -179,7 +181,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const examPdfPath = `exams/${question.exam}.pdf`;
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 max-w-5xl mx-auto w-full flex flex-col gap-5">
+    <div
+      ref={scrollRef}
+      className="flex-1 min-h-0 h-full overflow-y-auto px-4 py-6 md:px-8 max-w-5xl mx-auto w-full flex flex-col gap-5"
+    >
       {/* Question Card */}
       <div className="bg-white border border-[#e0e0e0] rounded-lg p-5 md:p-6 shadow-xs transition">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">

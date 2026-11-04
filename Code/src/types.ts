@@ -37,6 +37,7 @@ export interface Abbreviation {
 
 export interface RawQuestion {
   number: string;
+  topic?: string;
   type?: 'multiple_choice' | 'written';
   points?: number | null;
   question?: string;
@@ -55,6 +56,7 @@ export interface QuestionEntry {
   id: string; // e.g. "260610-1"
   exam: string;
   number: string;
+  topic?: string;
   type: 'multiple_choice' | 'written';
   points?: number | null;
   question: string;

@@ -1,10 +1,11 @@
-# AI Prompt: Generate Course Topic Guide JSON
+# AI Prompt: Generate Course Topic Guide JSON (Enrichment Mode)
 
 > **Usage Instructions**:  
 > Provide this prompt to an LLM (Gemini, Claude, GPT, etc.) along with:
-> 1. The schema template: `course_topic_guide_template.json`
-> 2. The course's exam questions JSON files (e.g., `exam_*.json`) or past exam papers
-> 3. Course syllabus, lecture outlines, or lecture slide titles
+> 1. The schema template: `course_topic_guide_template.json` (or `course_topic_guide_template.json.txt`)
+> 2. The previously generated **question topics JSON** (`question_topics.json` defining all course sections and topics with their IDs)
+> 3. All generated **exam answers JSON files** (each question tagged with its `"topic"` ID, detailed model explanations, and citations)
+> 4. (Optional) Course lecture slides or literature PDFs
 
 ---
 
@@ -14,47 +15,108 @@
 You are an expert university curriculum architect, pedagogical designer, and exam preparation strategist.
 
 ### Objective
-Your task is to analyze the provided course materials (past exam questions, syllabus, lecture decks, and topic lists) and synthesize a comprehensive, highly structured **Course Topic Guide JSON file** (`course_guide.json`) that strictly adheres to the schema provided in `course_topic_guide_template.json`.
+Your task is to take the **already generated course sections and question topics** (from `question_topics.json`) and the **solved exam questions** (from the exam answers JSON files) and generate an enriched **Course Topic Guide JSON file** (`course_guide.json` or `course_topic_guide.json`) that strictly adheres to `course_topic_guide_template.json`.
 
-The purpose of this guide is to turn past exam questions and course topics into an interconnected, high-yield study blueprint.
+In this phase, you are NOT inventing new sections or topics, and you are NOT repeating taxonomic metadata:
+- **DO NOT duplicate** `title`, `code`, `summary`, `badge`, `number`, or `course` metadata. All of those already exist in `question_topics.json`.
+- **Match strictly by `id`**: For each section and topic, provide ONLY the exact matching `id` plus its deep pedagogical study enrichment fields:
+  1. Everyday intuitive mental models and physical analogies (`plainWords`)
+  2. High-yield examiner tips, grading pitfalls, and conceptual traps (`keyTakeaway`)
+  3. Structured technical knowledge blocks, comparative tables, and formulas (`infoNeeded`)
+
+The cheat sheet has been removed; focus entirely on delivering deep, authoritative section-level and topic-level study material.
 
 ---
 
-### Critical Architectural Guidelines
+### Universal Markdown & LaTeX Math in JSON (CRITICAL RULES)
 
-1. **Strict Reference Schema (Zero Question Duplication)**:
-   - Do **NOT** copy or duplicate full question bodies or multiple-choice alternatives into this file.
-   - Instead, populate `"examReferences"` under each topic by pointing directly to the exam session and question number (e.g., `{"exam": "250613", "questionNumber": "4", "note": "Tests difference between control plane and data plane"}`).
-   - The app dynamically resolves and displays the full interactive question, choices, and model answers from the exam files.
+**Every single textual field** in this JSON is parsed by a full GitHub-Flavored Markdown engine with KaTeX math rendering. Take full advantage of this across all fields (`plainWords`, `keyTakeaway`, `points`, `table` cells, and `formula`), but you MUST strictly adhere to JSON string escaping rules:
 
-2. **Topic Constellation Strategy**:
-   - Think carefully about the organization of sections and topics. Avoid making too few broad sections (which feels overwhelming) or too many fragmented micro-topics.
-   - Aim for 4 to 8 thematic sections (e.g., Foundations, Architectures, Protocols, Resource Management, Advanced Systems).
-   - Each section should contain 3 to 7 logically coherent topics covering the syllabus.
+#### 1. Typography & Markdown Formatting
+- Use `**bold**` for core architectural principles, protocol names, and invariant rules.
+- Use `` `code` `` for protocol commands, header fields, registers, functions, and parameters (e.g. `OFPIT_APPLY_ACTIONS`, `sk_buff`, `min_rtt`).
+- Use `- item` or `1. item` for step-by-step mechanisms, causality chains, and state machine transitions.
+- Use `> quote` for architectural axioms, standard definitions, or RFC citations.
 
-3. **Cognitive Ergonomics & Everyday Analogies (`plainWords`)**:
-   - For every topic, write an intuitive real-world mental model starting with `"Think of..."`.
-   - Use concrete, everyday mechanical or physical systems (e.g., air traffic control towers, post office sorting hubs, restaurant kitchen expeditors, library card catalogs, multi-lane highway tolls, assembly line quality checks).
-   - This relieves cognitive fatigue and helps students instantly grasp abstract concepts before diving into technical definitions.
+#### 2. LaTeX Math & Mandatory Double-Escaped Backslashes (`\\`)
+- **Math Delimiters**: Use `$math$` for inline math and `$$math$$` for standalone display equations. Avoid `\(...\)` and `\[...\]` in JSON strings because they require escaping parentheses and brackets in JSON.
+- **CRITICAL BACKSLASH RULE FOR JSON**: In JSON strings, the backslash `\` is the JSON escape character. Therefore, **every LaTeX command MUST use double backslashes (`\\`)**:
+  - Write `$\\alpha = 0.125$`, NEVER `$\alpha = 0.125$` (single `\a` is an invalid JSON escape that crashes the parser).
+  - Write `$\\text{ms}$`, NEVER `$\text{ms}$` (single `\t` is parsed as a tab character `\u0009`, corrupting the formula).
+  - Write `$$\\frac{BDP}{\\text{MSS}}$$`, NEVER `$$\frac{BDP}{\text{MSS}}$$` (single `\f` is parsed as a form feed character `\u000c`).
+  - Write `$\\beta$`, NEVER `$\beta$` (single `\b` is parsed as a backspace character).
+  - Always double-escape mathematical operators and symbols: `$\\le$`, `$\\ge$`, `$\\times$`, `$\\cdot$`, `$\\dots$`, `$\\sqrt{...}$`, `$\\approx$`, `$\\rightarrow$`.
+  - For line breaks inside math arrays/matrices (`\\`), use quadruple backslashes in JSON: `\\\\`.
+- Any unescaped single backslash before a LaTeX command will produce invalid JSON or silently corrupt the formula text.
 
-4. **High-Yield Examiner Tips (`keyTakeaway`)**:
-   - Highlight recurring exam traps, subtle distinctions, common student misconceptions, and exact phrasing required by university grading rubrics (e.g., *"Examiners frequently test the difference between X and Y; remember that X operates in kernel space while Y is purely user-space"*).
+---
 
-5. **Structured Knowledge Blocks (`infoNeeded`)**:
-   - Provide concise technical summaries using:
-     - Bullet points with exact technical mechanisms, protocol fields, or causal relationships.
-     - Comparative markdown/JSON tables (`headers` and `rows`) contrasting competing technologies, algorithms, or protocols.
-     - Precise mathematical formulas (e.g., bandwidth-delay product, header overhead, bit calculations) where relevant.
+### Critical Enrichment Guidelines
 
-6. **Course Cheat Sheet (`cheatSheet`)**:
-   - **`numericalLimits`**: Extract exact constants, standard port numbers, header size limits, timeouts, and bit-widths tested in the course.
-   - **`whyQuestions`**: High-frequency exam questions asking "Why" or "How", answered with a crisp 1–2 sentence causal chain: **Claim → Underlying Mechanism → System Consequence**.
-   - **`technologyTriads`**: Comparative 3-tier taxonomies or hierarchies (e.g., Slow/Standard/Accelerated architectures, or Level 1/2/3 caching).
+#### 1. Strictly Match IDs (Zero Taxonomy Duplication)
+- Every section in your output MUST have the exact `"id"` matching a section in `question_topics.json`.
+- Every topic in your output MUST have the exact `"id"` matching a topic in `question_topics.json`.
+- Do not add, omit, or rename any `id`. Do not output duplicate fields (`title`, `code`, `summary`, `badge`, `number`).
+
+#### 2. Section-Level Pedagogical Architecture
+For every **Section** (matched by its `id`), synthesize:
+- **`plainWords` (Overarching Section Analogy)**: Write an intuitive real-world mental model starting with `"Think of..."`. Frame the entire problem space of the section using an everyday mechanical, physical, or organizational system (e.g., city traffic grids vs railway schedules, postal sorting hubs vs telephone exchanges).
+- **`keyTakeaway` (Section Synthesis & Examiner Traps)**: Synthesize the overarching themes of the section. Highlight systemic trade-offs, common student blind spots, and recurring exam rubrics spanning multiple topics in this section.
+- **`infoNeeded` (Cross-Cutting Knowledge Blocks)**:
+  - Provide section-wide invariants and fundamental rules.
+  - Include comparative tables (`headers` and `rows`) contrasting overarching paradigms.
+  - Include mathematical formulas or scaling laws governing the section.
+
+#### 3. Topic-Level Pedagogical Architecture
+For every **Topic** (matched by its `id`), synthesize insights directly from the exam questions and answers tagged with that topic:
+- **`plainWords` (Topic Mental Model)**: A crisp, concrete analogy explaining the specific protocol, algorithm, or trade-off (e.g., CoDel's sliding stopwatch, token bucket as a metered valve, BBR as an elevator dispatcher).
+- **`keyTakeaway` (Targeted Examiner Tips)**: Direct advice targeting the exact misconceptions tested in the exam answers (e.g., *"Examiners frequently test whether CoDel drops packets on arrival or on dequeue; remember it drops on DEQUEUE to measure experienced sojourn time"*).
+- **`infoNeeded` (Structured Knowledge Blocks)**:
+  - `points`: Bulleted technical facts, protocol state machine transitions, and causal chains.
+  - `table`: Structured comparative tables contrasting competing mechanisms, algorithms, or protocol versions.
+  - `formula`: Key equations in LaTeX syntax with double-escaped backslashes (e.g., `"$$t_{\\text{next}} = t_{\\text{now}} + \\frac{\\text{interval}}{\\sqrt{\\text{count}}}$$"`).
 
 ---
 
 ### Output Format
-- Output **ONLY** a valid JSON object matching the structure illustrated in `course_topic_guide_template.json`.
-- Do not wrap the JSON in conversational commentary.
+- Return **ONLY** a valid JSON object matching the streamlined structure illustrated in `course_topic_guide_template.json`:
+```json
+{
+  "sections": [
+    {
+      "id": "sec-1-arch",
+      "plainWords": "Think of...",
+      "keyTakeaway": "...",
+      "infoNeeded": [
+        {
+          "title": "Fundamental Architectural Invariants",
+          "points": [ ... ],
+          "table": {
+            "headers": [ ... ],
+            "rows": [ [ ... ] ]
+          },
+          "formula": "$$BDP = RTT \\times BW$$"
+        }
+      ],
+      "topics": [
+        {
+          "id": "topic-fate-sharing",
+          "plainWords": "Think of...",
+          "keyTakeaway": "...",
+          "infoNeeded": [
+            {
+              "title": "State Survivability Principles",
+              "points": [ ... ],
+              "table": { ... },
+              "formula": "..."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+- Do **NOT** wrap the JSON in conversational commentary.
 - Ensure all JSON keys, braces, and arrays are valid and parseable without syntax errors.
 ```

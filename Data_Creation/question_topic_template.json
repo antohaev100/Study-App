@@ -1,0 +1,70 @@
+{
+  "$schema_description": "Curriculum Categorization Template: Sections and Question Topics. Use this template to categorize all course content and patterns discovered across past exams into coherent syllabus sections with exactly 2 to 4 question topics per section. This file defines the master topic taxonomy used to tag questions.",
+  "markdown_and_latex_support": {
+    "note": "Textual fields support Markdown and LaTeX math ($math$).",
+    "mandatory_json_backslash_rule": "In JSON strings, every LaTeX backslash MUST be double-escaped as \\\\ (e.g. '$O(1)$', '$\\alpha$'). Single backslashes like \\t or \\f corrupt text or crash JSON parsers."
+  },
+  "course": {
+    "code": "EXPLANATION: Official course code string (e.g. 'DVAD21', 'CS301', 'COMP4100')",
+    "title": "EXPLANATION: Full official course name (e.g. 'Internet Architecture and Protocols')",
+    "subtitle": "EXPLANATION: Key thematic focus areas of the course (e.g. 'Advanced Transport Protocols, Congestion Control & Web Evolution')",
+    "description": "EXPLANATION: 1-2 sentence overview of the course scope and syllabus categorization."
+  },
+  "sections": [
+    {
+      "id": "EXPLANATION: Unique URL-safe identifier string (e.g. 'sec-1-architecture', 'sec-2-congestion-control')",
+      "number": "EXPLANATION: Section or module number string (e.g. '1', '2', 'Module I')",
+      "title": "EXPLANATION: Descriptive section title covering a broad course theme (e.g. 'Internet Architecture & End-to-End Design Principles')",
+      "subtitle": "EXPLANATION: 1-line conceptual subtitle summarizing this section's focus (e.g. 'Fate-Sharing, Soft State, Heterogeneity & The End-to-End Argument')",
+      "summary": "EXPLANATION: 1-2 sentence overview explaining the central problems, architecture, or mechanisms covered in this section.",
+      "badge": "EXPLANATION: Visual category badge label (e.g. 'Foundations', 'High Frequency', 'Advanced Architecture', 'Core Protocols')",
+      "topics": [
+        {
+          "id": "EXPLANATION: Unique topic ID string matching what will be referenced in questions (e.g. 'topic-1-1', 'topic-fate-sharing')",
+          "code": "EXPLANATION: Academic hierarchical code (e.g. '1.1', '1.2', '2.1')",
+          "title": "EXPLANATION: Specific question topic title (e.g. 'Fate-Sharing & State Placement in Intermediate Nodes')",
+          "summary": "EXPLANATION: 1-2 sentence crisp definition of the specific technical concepts, tradeoffs, or protocols assessed under this topic.",
+          "badge": "EXPLANATION: Optional topic priority or style badge (e.g. 'Exam Core', 'Recurring Conceptual', 'Analytical / Calculation')"
+        },
+        {
+          "id": "EXPLANATION: Unique topic ID for second topic in section (e.g. 'topic-1-2', 'topic-soft-state')",
+          "code": "1.2",
+          "title": "EXPLANATION: Second question topic title within this section (e.g. 'Soft State vs. Hard State & Survivability')",
+          "summary": "EXPLANATION: 1-2 sentence summary of this topic's technical scope and core trade-offs.",
+          "badge": "EXPLANATION: Optional badge (e.g. 'Core Theory', 'High Frequency')"
+        }
+      ]
+    },
+    {
+      "id": "sec-example-real",
+      "number": "2",
+      "title": "Example Real Section: Active Queue Management (AQM) & Bufferbloat",
+      "subtitle": "Queue Delay Tracking, Sojourn Times, Dropping vs Marking & CoDel/FQ-CoDel Mechanics",
+      "summary": "Mechanisms designed to control standing queue delay at network bottlenecks without sacrificing high link utilization.",
+      "badge": "High Frequency",
+      "topics": [
+        {
+          "id": "topic-aqm-principles",
+          "code": "2.1",
+          "title": "Bufferbloat & AQM Design Principles",
+          "summary": "Distinguishing standing queues from transient bursts, and why oversized unmanaged drop-tail buffers inflate RTT.",
+          "badge": "Exam Core"
+        },
+        {
+          "id": "topic-codel-mechanisms",
+          "code": "2.2",
+          "title": "CoDel & Sojourn Time Control (Target & Interval)",
+          "summary": "Tracking minimum packet packet delay over a sliding 100 ms interval against a 5 ms target threshold.",
+          "badge": "Recurring Conceptual"
+        },
+        {
+          "id": "topic-fq-codel-isolation",
+          "code": "2.3",
+          "title": "Flow Queueing CoDel (FQ-CoDel) & Flow Isolation",
+          "summary": "Combining fair flow queueing hash buckets with CoDel AQM to isolate latency-sensitive flows from bulk senders.",
+          "badge": "Systems Architecture"
+        }
+      ]
+    }
+  ]
+}

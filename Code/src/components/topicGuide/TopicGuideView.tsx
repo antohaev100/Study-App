@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { STUDY_SECTIONS, COURSE_METADATA } from '../../utils/topicStructure';
+import { STUDY_SECTIONS, COURSE_METADATA, CHEAT_SHEET_DATA } from '../../utils/topicStructure';
 import { QuestionEntry, Citation } from '../../types';
 import { SectionItem } from './SectionItem';
 import { CheatSheetModal } from './CheatSheetModal';
@@ -23,12 +23,14 @@ interface TopicGuideViewProps {
   entries: QuestionEntry[];
   onOpenCitation: (citation: Citation) => void;
   onOpenSourcesLibrary: () => void;
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const TopicGuideView: React.FC<TopicGuideViewProps> = ({
   entries,
   onOpenCitation,
   onOpenSourcesLibrary,
+  scrollRef,
 }) => {
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,8 +174,19 @@ export const TopicGuideView: React.FC<TopicGuideViewProps> = ({
     }
   }, [searchQuery]);
 
+  const hasCheatSheet = useMemo(() => {
+    return (
+      (CHEAT_SHEET_DATA?.numericalLimits?.length || 0) > 0 ||
+      (CHEAT_SHEET_DATA?.whyQuestions?.length || 0) > 0 ||
+      (CHEAT_SHEET_DATA?.technologyTriads?.length || 0) > 0
+    );
+  }, []);
+
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 max-w-5xl mx-auto w-full flex flex-col gap-6">
+    <div
+      ref={scrollRef}
+      className="flex-1 min-h-0 h-full overflow-y-auto px-4 py-6 md:px-8 max-w-5xl mx-auto w-full flex flex-col gap-6"
+    >
       {/* Top Hero Card & Blueprint Introduction */}
       <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-6 md:p-8 shadow-md border border-purple-800/40 relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-60 h-60 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -200,15 +213,17 @@ export const TopicGuideView: React.FC<TopicGuideViewProps> = ({
 
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap md:flex-col items-stretch gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsCheatSheetOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg shadow-sm transition active:scale-98 cursor-pointer"
-              title="Open Quick-Access Cram Sheet with ports, limits and 1-line answers"
-            >
-              <Zap className="w-4 h-4 fill-slate-950" />
-              <span>Quick Cram Sheet</span>
-            </button>
+            {hasCheatSheet && (
+              <button
+                type="button"
+                onClick={() => setIsCheatSheetOpen(true)}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg shadow-sm transition active:scale-98 cursor-pointer"
+                title="Open Quick-Access Cram Sheet with ports, limits and 1-line answers"
+              >
+                <Zap className="w-4 h-4 fill-slate-950" />
+                <span>Quick Cram Sheet</span>
+              </button>
+            )}
 
             <button
               type="button"
