@@ -49,6 +49,13 @@ The cheat sheet has been removed; focus entirely on delivering deep, authoritati
   - For line breaks inside math arrays/matrices (`\\`), use quadruple backslashes in JSON: `\\\\`.
 - Any unescaped single backslash before a LaTeX command will produce invalid JSON or silently corrupt the formula text.
 
+#### 3. Separation of Code vs. Math & No Raw HTML
+- **Never Output Raw HTML / MathML**: Never output HTML tags like `<span class="katex">`, `<math>`, or `<semantics>`. Only write standard LaTeX (`$inline$` or `$$display$$`). The frontend engine automatically compiles standard LaTeX into KaTeX HTML; manual raw HTML will cause escaping collisions.
+- **Distinguish Code vs. Math**:
+  - Use backticks (`` `$var` ``, `` `$ns at` ``, `` `$0` ``) exclusively for code, shell syntax, packet headers, and script commands.
+  - Use dollar signs (`$E = mc^2$`, `$O(1)$`) exclusively for math notation. Never nest backticks inside dollar signs.
+- **Literal Dollar Signs in Prose**: If a literal dollar sign appears in normal prose (e.g., currency `\$100`), escape it as `\$`.
+
 ---
 
 ### Critical Enrichment Guidelines

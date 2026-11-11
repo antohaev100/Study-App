@@ -17,22 +17,35 @@ interface SlideEntry {
   section?: string;
 }
 
-interface RrEntry {
+interface PageMapEntry {
+  slide?: number;
+  page?: number | null;
+  title?: string;
+  section?: string;
+  headings?: string[];
+}
+
+interface DocEntry {
+  id?: string;
   title?: string;
   author?: string;
   description?: string;
   pages?: number;
-  pageMap?: Array<{ page: number; headings?: string[] }>;
+  pageMap?: PageMapEntry[];
+  document?: string;
+  slide?: number;
+  page?: number;
+  section?: string;
 }
 
 // Safely load index JSON files from src/data/ if available
-const slideModules = import.meta.glob<{ default: Record<string, SlideEntry> }>(
+const slideModules = import.meta.glob<{ default: Record<string, DocEntry> }>(
   '../data/slides_index.json',
   { eager: true }
 );
 const rawSlidesIndex = Object.values(slideModules)[0]?.default || {};
 
-const rrModules = import.meta.glob<{ default: Record<string, RrEntry> }>(
+const rrModules = import.meta.glob<{ default: Record<string, DocEntry> }>(
   '../data/rr_index.json',
   { eager: true }
 );
@@ -46,7 +59,50 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
   if (!isOpen) return null;
 
   const lectures = useMemo(() => {
-    const slidesRecord = (rawSlidesIndex || {}) as Record<string, SlideEntry>;
+    const slidesRecord = (rawSlidesIndex || {}) as Record<string, DocEntry>;
+    
+    // Check if this is the modern unified format (keys are filenames, entries have pageMap or id)
+    const isModernFormat = Object.entries(slidesRecord).some(
+      ([key, val]) => !/^\d+$/.test(key) && (val?.pageMap || val?.id)
+    );
+
+    if (isModernFormat) {
+      return Object.entries(slidesRecord)
+        .filter(([key]) => !key.startsWith('_'))
+        .map(([fileName, doc]) => {
+          const cleanTitle =
+            doc.title ||
+            fileName
+              .replace(/\.pdf$/i, '')
+              .replace(/^Lectures_/i, 'Course Lectures: ')
+              .replace(/_/g, ' ');
+
+          const firstTitles: string[] = [];
+          if (Array.isArray(doc.pageMap)) {
+            for (const pm of doc.pageMap) {
+              if (pm.title && !firstTitles.includes(pm.title) && firstTitles.length < 4) {
+                firstTitles.push(pm.title);
+              }
+            }
+          }
+
+          const desc =
+            doc.description ||
+            (firstTitles.length > 0
+              ? `Topics: ${firstTitles.join(', ')}`
+              : `${doc.pages || doc.pageMap?.length || 0} slides indexed`);
+
+          return {
+            title: cleanTitle,
+            document: fileName,
+            description: desc,
+            page: 1,
+            type: 'lecture' as const,
+          };
+        });
+    }
+
+    // Fallback: legacy format where keys are slide numbers
     const docMap = new Map<
       string,
       {
@@ -105,48 +161,47 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
   }, []);
 
   const readings = useMemo(() => {
-    const rrRecord = (rawRrIndex || {}) as Record<string, RrEntry>;
-    return Object.entries(rrRecord).map(([fileName, data]) => {
-      const cleanTitle =
-        data.title ||
-        fileName
-          .replace(/^RR_/i, '')
-          .replace(/\.pdf$/i, '')
-          .replace(/_/g, ' ');
+    const rrRecord = (rawRrIndex || {}) as Record<string, DocEntry>;
+    return Object.entries(rrRecord)
+      .filter(([key]) => !key.startsWith('_'))
+      .map(([fileName, data]) => {
+        const cleanTitle =
+          data.title ||
+          fileName
+            .replace(/^RR_/i, '')
+            .replace(/\.pdf$/i, '')
+            .replace(/_/g, ' ');
 
-      const docPath =
-        fileName.startsWith('Recommended_Readings/') || fileName.includes('/')
-          ? fileName
-          : `Recommended_Readings/${fileName}`;
+        const docPath =
+          fileName.startsWith('Recommended_Readings/') || fileName.includes('/')
+            ? fileName
+            : `Recommended_Readings/${fileName}`;
 
-      const firstHeadings: string[] = [];
-      if (Array.isArray(data?.pageMap)) {
-        for (const pm of data.pageMap) {
-          if (pm.headings && pm.headings.length > 0) {
-            for (const h of pm.headings) {
-              if (h && !firstHeadings.includes(h) && firstHeadings.length < 4) {
-                firstHeadings.push(h);
-              }
+        const firstHeadings: string[] = [];
+        if (Array.isArray(data?.pageMap)) {
+          for (const pm of data.pageMap) {
+            const h = pm.title || pm.section || pm.headings?.[0];
+            if (h && !firstHeadings.includes(h) && firstHeadings.length < 4) {
+              firstHeadings.push(h);
             }
           }
         }
-      }
 
-      const description =
-        data.description ||
-        (firstHeadings.length > 0
-          ? `Key sections: ${firstHeadings.join(', ')}`
-          : `${data.pages || 0} pages reference material`);
+        const description =
+          data.description ||
+          (firstHeadings.length > 0
+            ? `Key sections: ${firstHeadings.join(', ')}`
+            : `${data.pages || 0} pages reference material`);
 
-      return {
-        title: cleanTitle,
-        author: data.author || 'Recommended Literature',
-        document: docPath,
-        description,
-        page: 1,
-        type: 'literature' as const,
-      };
-    });
+        return {
+          title: cleanTitle,
+          author: data.author || 'Recommended Literature',
+          document: docPath,
+          description,
+          page: 1,
+          type: 'literature' as const,
+        };
+      });
   }, []);
 
   return (

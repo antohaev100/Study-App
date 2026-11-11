@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Citation } from '../types';
 import { X, ExternalLink, ChevronLeft, ChevronRight, FileText, BookOpen } from 'lucide-react';
 import { resolveSourceUrl, cleanDocumentName } from '../utils/sourceUrls';
+import { resolveCitation } from '../utils/citationResolver';
 
 interface CitationModalProps {
   citation: Citation | null;
@@ -10,21 +11,22 @@ interface CitationModalProps {
 }
 
 export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, onClose }) => {
+  const resolved = useMemo(() => (citation ? resolveCitation(citation) : null), [citation]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   useEffect(() => {
-    if (citation) {
-      setCurrentPage(citation.page);
+    if (resolved) {
+      setCurrentPage(resolved.page);
     }
-  }, [citation]);
+  }, [resolved]);
 
-  if (!isOpen || !citation) return null;
+  if (!isOpen || !resolved) return null;
 
-  const pdfUrl = resolveSourceUrl(citation.document, currentPage, citation.type, citation.slide);
-  const fullWindowUrl = resolveSourceUrl(citation.document, currentPage, citation.type, citation.slide);
+  const pdfUrl = resolveSourceUrl(resolved.document, currentPage, resolved.type, resolved.slide);
+  const fullWindowUrl = resolveSourceUrl(resolved.document, currentPage, resolved.type, resolved.slide);
 
-  const isLecture = citation.type === 'lecture';
-  const docDisplayName = citation.title || cleanDocumentName(citation.document);
+  const isLecture = resolved.type === 'lecture';
+  const docDisplayName = resolved.title || cleanDocumentName(resolved.document);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -50,7 +52,7 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-sm text-slate-100 truncate">
-                  {citation.title || docDisplayName}
+                  {resolved.title || docDisplayName}
                 </span>
                 <span
                   className={`text-[0.68rem] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
@@ -63,12 +65,12 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
                 </span>
               </div>
               <div className="text-xs text-slate-400 truncate flex items-center gap-2 mt-0.5">
-                <span>{citation.document}</span>
-                {citation.section && (
-                  <span className="text-slate-300 font-medium">• {citation.section}</span>
+                <span>{resolved.document}</span>
+                {resolved.section && (
+                  <span className="text-slate-300 font-medium">• {resolved.section}</span>
                 )}
-                {citation.slide && (
-                  <span className="text-blue-300 font-medium">• Slide {citation.slide}</span>
+                {resolved.slide && (
+                  <span className="text-blue-300 font-medium">• Slide {resolved.slide}</span>
                 )}
               </div>
             </div>

@@ -1,31 +1,48 @@
 {
-  "_comment": "Course Study App — Slide Deck Index Template. Use this file to map slide numbers to PDF files, PDF page numbers, slide titles, and topic sections. The keys in this JSON object are sequential slide numbers (as strings, e.g. '1', '2', '3') or custom slide IDs referenced by exam questions and topic guides.",
-  "1": {
-    "document": "Lectures_Part1.pdf",
-    "slide": 1,
-    "page": 1,
-    "title": "Course Introduction and Overview",
-    "section": "Module 1: Foundations"
-  },
-  "2": {
-    "document": "Lectures_Part1.pdf",
-    "slide": 2,
-    "page": 2,
-    "title": "Architectural Principles and Core Abstractions",
-    "section": "Module 1: Foundations"
-  },
-  "3": {
-    "document": "Lectures_Part1.pdf",
-    "slide": 3,
-    "page": 3,
-    "title": "Layering, Decoupling, and Interfaces",
-    "section": "Module 1: Foundations"
-  },
-  "50": {
-    "document": "Lectures_Part2.pdf",
-    "slide": 50,
-    "page": 1,
-    "title": "Advanced Topics and Implementation Strategies",
-    "section": "Module 2: Advanced Concepts"
+  "_comment": "Course Study App — Lecture Slides Index Template. Each top-level key corresponds to the bare PDF filename of the slide deck in the sources directory. The internal structure matches the Recommended Readings index exactly.",
+  "DVAD27_Lectures.pdf": {
+    "id": "lectures-dvad27",
+    "title": "Systems Modeling and Simulation: Core Lecture Slides",
+    "author": "Department of Computer Science",
+    "description": "Core lecture slide deck covering performance comparison, statistical ANOVA, Monte Carlo and discrete-event simulation architecture, and NS-2 network simulation scripting.",
+    "pages": 450,
+    "pageMap": [
+      {
+        "slide": 1,
+        "page": null,
+        "title": "Comparisons and ANOVA: Title and Overview",
+        "section": "Course Introduction"
+      },
+      {
+        "slide": 2,
+        "page": 1,
+        "title": "Comparing Two Alternatives: Motivation and Cases",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 3,
+        "page": 2,
+        "title": "Non-Corresponding Measurements: Assumptions",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 4,
+        "page": 3,
+        "title": "Non-Corresponding Measurements: t-Test Procedure",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 5,
+        "page": 4,
+        "title": "Difference of Means: Large Sample Confidence Interval",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 106,
+        "page": 105,
+        "title": "Discrete-Event Simulation (DES) Architecture",
+        "section": "Simulation Modeling"
+      }
+    ]
   }
 }

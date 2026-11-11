@@ -1,11 +1,12 @@
 export interface Citation {
-  document: string;
-  page: number;
+  id?: string;
   slide?: number;
-  section?: string;
-  label: string;
-  title?: string;
   type: 'lecture' | 'literature';
+  document?: string;
+  page?: number;
+  section?: string;
+  label?: string;
+  title?: string;
 }
 
 export interface Alternative {

@@ -1,58 +1,68 @@
 {
-  "_comment": "Course Study App — Recommended Readings (RR) Literature Index Template. If your course does NOT use supplementary readings or literature, set this entire file to an empty object '{}'. When configured, each top-level key corresponds to a PDF filename in the 'sources/' or 'sources/Recommended_Readings/' folder.",
-  "Research_Survey_2024.pdf": {
-    "title": "A Survey of Modern Network Architectures and Protocols",
-    "author": "Alice Smith, Bob Jones (2024)",
-    "description": "Comprehensive comparative survey analyzing SDN control plane scalability, programmable data planes, and high-performance packet processing pipelines.",
-    "pages": 18,
+  "_comment": "Course Study App — Recommended Readings (RR) Literature Index Template. If the course does not use supplementary readings or literature, provide an empty object '{}'. Otherwise, each top-level key corresponds to the bare PDF filename of the literature source in the sources directory.",
+  "RR_measuring-computer-performance-a-practitioners-guide.pdf": {
+    "id": "rr-lilja-perf",
+    "title": "Measuring Computer Performance: A Practitioner's Guide",
+    "author": "David J. Lilja (2000)",
+    "description": "Comprehensive textbook on experimental computer systems performance evaluation, covering metric selection, statistical summarizing, error models, measurement instrumentation, benchmarking, and experimental design.",
+    "pages": 187,
     "pageMap": [
       {
+        "slide": 1,
+        "page": null,
+        "title": "Cover and Title Page",
+        "section": "Front Matter"
+      },
+      {
+        "slide": 8,
+        "page": null,
+        "title": "Table of Contents",
+        "section": "Front Matter"
+      },
+      {
+        "slide": 19,
         "page": 1,
-        "headings": [
-          "I. Introduction",
-          "Section I.A: Historical Background"
-        ]
+        "title": "Introduction to Performance Evaluation",
+        "section": "Chapter 1: Overview"
       },
       {
-        "page": 2,
-        "headings": [
-          "II. Architectural Models",
-          "Section II.B: Control vs Data Planes"
-        ]
+        "slide": 26,
+        "page": 8,
+        "title": "Selection of Techniques and Metrics",
+        "section": "Chapter 1: Selection of Techniques and Metrics"
       },
       {
-        "page": 5,
-        "headings": [
-          "III. Performance Benchmarks and Trade-offs"
-        ]
-      },
-      {
-        "page": 10,
-        "headings": [
-          "IV. Future Trends and Open Challenges",
-          "Section IV.C: Scalability Limits"
-        ]
+        "slide": 45,
+        "page": 27,
+        "title": "Measurement Tools and Performance Monitors",
+        "section": "Chapter 2: Measurement Tools"
       }
     ]
   },
-  "Industry_Standard_RFC9999.pdf": {
-    "title": "RFC 9999 — Standard Encapsulation and Framing Protocol",
-    "author": "IETF Working Group",
-    "description": "Protocol specification detailing header layouts, packet formats, encapsulation rules, and hardware acceleration offloads.",
-    "pages": 12,
+  "RR_PERFORMANCE_EVALUATION.pdf": {
+    "id": "rr-le-boudec-perf",
+    "title": "Performance Evaluation of Computer and Communication Systems",
+    "author": "Jean-Yves Le Boudec (2010)",
+    "description": "Foundational treatise on performance evaluation methodologies, benchmark tests, confidence intervals, queueing theory, and stochastic simulation validation.",
+    "pages": 302,
     "pageMap": [
       {
-        "page": 1,
-        "headings": [
-          "1. Status of This Memo",
-          "2. Protocol Specification"
-        ]
+        "slide": 1,
+        "page": null,
+        "title": "Title Page and Acknowledgements",
+        "section": "Front Matter"
       },
       {
-        "page": 4,
-        "headings": [
-          "3. Header Formats and Bit-field Alignment"
-        ]
+        "slide": 8,
+        "page": 2,
+        "title": "The Scientific Method in Computer Science",
+        "section": "Chapter 1: Model Construction and Verification"
+      },
+      {
+        "slide": 14,
+        "page": 8,
+        "title": "Benchmarking Traps and Metric Fallacies",
+        "section": "Chapter 1: Model Construction and Verification"
       }
     ]
   }

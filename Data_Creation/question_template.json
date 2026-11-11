@@ -2,7 +2,8 @@
   "$schema_description": "Production Exam Answers Template. Defines solved exam questions with Markdown and KaTeX math support across all text fields.",
   "markdown_and_latex_support": {
     "note": "ALL TEXTUAL FIELDS SUPPORT FULL GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
-    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$' (NEVER '$\\alpha$' with a single backslash, which is an illegal JSON escape), write '$\\text{ms}$' (NEVER '$\\text{ms}$', which converts '\\t' into a tab character), and write '$$\\frac{a}{b}$$' (NEVER '$$\\frac{a}{b}$$', which converts '\\f' into a form feed character). Prefer '$...$' and '$$...$$' delimiters to avoid delimiter escaping errors in JSON."
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$' (NEVER '$\\alpha$' with a single backslash, which is an illegal JSON escape), write '$\\text{ms}$' (NEVER '$\\text{ms}$', which converts '\\t' into a tab character), and write '$$\\frac{a}{b}$$' (NEVER '$$\\frac{a}{b}$$', which converts '\\f' into a form feed character). Prefer '$...$' and '$$...$$' delimiters to avoid delimiter escaping errors in JSON.",
+    "code_and_math_rules": "Use backticks (`$var`) exclusively for code, shell syntax, packet headers, and script variables; use dollar signs ($math$) exclusively for LaTeX math (never nest backticks in math). Never output raw HTML/MathML tags like <span class='katex'> or <math>. Escape literal dollar signs in prose as \\$."
   },
   "exam": "EXAM_ID (String: A 6-digit exam date/code, e.g. '250107', '250613', '251107', '260108', or '260610')",
   "questions": [
@@ -20,21 +21,16 @@
           "lecture_explanation": "MARKDOWN FIELD: A rigorous technical explanation justifying WHY the statement is True or False. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bold** for key architectural concepts, planes, and protocols. 2. Use inline backticks `code` for functions, instruction names (e.g. `OFPIT_APPLY_ACTIONS`, `GOTO_TABLE`), packet headers, registers, or kernel structures (`sk_buff`, `rte_mempool`). 3. Use bullet points (- item) or numbered lists (1. item) when explaining multi-stage pipeline sequences or operational steps. 4. Use LaTeX math ($inline$ or $$display$$) with MANDATORY double-escaped backslashes (e.g., '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', '$O(M \\times N)$'). Never write unescaped '\\t' or '\\f'. CONTENT RULES: Explain the technical mechanics (protocol boundaries, hardware ASIC pipelines vs software forwarding, state machines, memory limits). STRICT PROHIBITION: Never say 'In the lectures', 'Slide X states', or leave empty parentheses '()'. State the facts directly.",
           "lecture_citations": [
             {
-              "document": "INSTRUCTION: The exact lecture slide deck filename. Allowed values: 'Lectures_DVAD20_part1.pdf' (for slides 1 to 150) or 'Lectures_DVAD20_part2.pdf' (for slides 151 to 299).",
-              "page": "INSTRUCTION: Integer (1-indexed) representing the exact PDF page number. MAPPING RULE: For Part 1, page = slide (e.g., Slide 93 is page 93). For Part 2, page = slide - 150 (e.g., Slide 172 is page 22; Slide 255 is page 105; Slide 292 is page 142).",
-              "slide": "INSTRUCTION: Integer representing the original lecture slide number (1 to 299).",
-              "label": "INSTRUCTION: Short string badge displayed on the citation button (e.g., 'Slide 93', 'Slide 106', 'Slide 172').",
-              "title": "INSTRUCTION: The descriptive title or topic header of the cited slide (e.g., 'Characteristics of SDN', 'The OpenFlow Environment', 'The SDN Architecture').",
+              "id": "INSTRUCTION: Unique identifier string matching an 'id' from the provided lecture slides index (e.g., 'lectures-dvad20', 'lectures-part1').",
+              "slide": "INSTRUCTION: Integer (1-indexed physical sheet/slide number) corresponding to the cited slide in that lecture index.",
               "type": "lecture"
             }
           ],
           "RR_addition": "MARKDOWN FIELD: A true, non-repetitive supplementary engineering addition drawing from the Recommended Readings research papers. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bolding** for core terms and architectural paradigms. 2. Use inline backticks `code` for protocol commands, registers, and parameters. 3. Use bulleted lists (- item) to structure trade-offs or design considerations. 4. Use LaTeX math ($...$) with double-escaped backslashes (e.g. '$2^{24}$', '$\\approx$', '$O(M \\times N)$'). CONTENT RULES: 1. Must be a genuine addition and NEVER repeat or paraphrase the lecture explanation. 2. Provide deeper systems depth: hardware trade-offs (TCAM vs SRAM lookup tables, PCIe bus saturation, DMA ring buffers, CPU context-switch latency, cache invalidation, hugepages), historical drivers (network ossification, vendor lock-in), standards evolution (OpenFlow 1.0 single flat table explosion to OpenFlow 1.3+ multi-table pipelining to P4 protocol independence), or empirical findings. STRICT PROHIBITION: Do NOT write 'According to the paper...' or mention raw filenames in the text.",
           "literature_citations": [
             {
-              "document": "INSTRUCTION: Relative path to the cited paper within Recommended_Readings/. Allowed values: 'Recommended_Readings/RR_SDN_Feamster14.pdf' (12 pages), 'Recommended_Readings/RR_SDN_Nunez23.pdf' (6 pages), 'Recommended_Readings/RR_SDN_Hauser21.pdf' (141 pages), 'Recommended_Readings/RR_DCN_Zhang13.pdf' (26 pages), 'Recommended_Readings/RR_NFV_Mijumbi16.pdf' (27 pages), 'Recommended_Readings/RR_NFV_Nobach18.pdf' (8 pages), 'Recommended_Readings/RR_NV_Intel_Virtualization_Technology_for_Connectivity.pdf' (4 pages), 'Recommended_Readings/RR_NV_VXLAN.pdf' (9 pages).",
-              "page": "INSTRUCTION: Integer (1-indexed) representing the exact page number inside the cited PDF document.",
-              "section": "INSTRUCTION: String specifying the section number or name (e.g., 'Section 1', 'Section IV', 'Section 3.6', 'Section 4.1').",
-              "label": "INSTRUCTION: Human-readable display badge (e.g., 'Feamster et al. (2014) §1 (p. 1)', 'Nuñez et al. (2023) §IV (p. 3)', 'Hauser et al. (2021) §3.6 (p. 22)', 'Zhang et al. (2013) §III (p. 4)').",
+              "id": "INSTRUCTION: Unique identifier string matching an 'id' from the provided recommended readings literature index (e.g., 'rr-sdn-feamster14', 'rr-sdn-nunez23').",
+              "slide": "INSTRUCTION: Integer (1-indexed physical sheet/page number) corresponding to the cited section in that literature index.",
               "type": "literature"
             }
           ]
@@ -63,21 +59,16 @@
           "lecture_explanation": "MARKDOWN FIELD: A comprehensive, structured model answer addressing this question/subquestion based on course lecture material. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bold** for key architectural concepts, planes, and protocols. 2. Use inline backticks `code` for functions, instruction names, packet headers, registers, or kernel structures. 3. Use bullet points (- item) or numbered lists (1. item) to structure operational steps. 4. Use LaTeX math ($...$ or $$...$$) with MANDATORY double-escaped backslashes (e.g. '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$'). STRICT PROHIBITION: Never say 'In the lectures', 'Slide X states', or leave empty parentheses '()'. State the facts directly.",
           "lecture_citations": [
             {
-              "document": "INSTRUCTION: The exact lecture slide deck filename. Allowed values: 'Lectures_DVAD20_part1.pdf' (for slides 1 to 150) or 'Lectures_DVAD20_part2.pdf' (for slides 151 to 299).",
-              "page": "INSTRUCTION: Integer (1-indexed) representing the exact PDF page number. MAPPING RULE: For Part 1, page = slide. For Part 2, page = slide - 150.",
-              "slide": "INSTRUCTION: Integer representing the original lecture slide number (1 to 299).",
-              "label": "INSTRUCTION: Short string badge displayed on the citation button (e.g., 'Slide 93', 'Slide 106', 'Slide 172').",
-              "title": "INSTRUCTION: The descriptive title or topic header of the cited slide.",
+              "id": "INSTRUCTION: Unique identifier string matching an 'id' from the provided lecture slides index (e.g., 'lectures-dvad20', 'lectures-part1').",
+              "slide": "INSTRUCTION: Integer (1-indexed physical sheet/slide number) corresponding to the cited slide in that lecture index.",
               "type": "lecture"
             }
           ],
           "RR_addition": "MARKDOWN FIELD: A true, non-repetitive supplementary engineering addition drawing from the Recommended Readings research papers that deepens the model answer. THIS FIELD SUPPORTS AND ENCOURAGES FULL MARKDOWN FORMATTING: 1. Use **bolding** for core terms and architectural paradigms. 2. Use inline backticks `code` for protocol commands, registers, and parameters. 3. Use bulleted lists (- item) to structure trade-offs or design considerations. 4. Use LaTeX math ($...$) with double-escaped backslashes (e.g. '$2^{24}$', '$O(M \\times N)$'). CONTENT RULES: Must be a genuine addition and NEVER repeat or paraphrase the lecture explanation. Provide deeper systems depth (hardware constraints, memory hierarchy, standards evolution, or empirical trade-offs). STRICT PROHIBITION: Do NOT write 'According to the paper...' or mention raw filenames in the text.",
           "literature_citations": [
             {
-              "document": "INSTRUCTION: Relative path to the cited paper within Recommended_Readings/. Allowed values: 'Recommended_Readings/RR_SDN_Feamster14.pdf' (12 pages), 'Recommended_Readings/RR_SDN_Nunez23.pdf' (6 pages), 'Recommended_Readings/RR_SDN_Hauser21.pdf' (141 pages), 'Recommended_Readings/RR_DCN_Zhang13.pdf' (26 pages), 'Recommended_Readings/RR_NFV_Mijumbi16.pdf' (27 pages), 'Recommended_Readings/RR_NFV_Nobach18.pdf' (8 pages), 'Recommended_Readings/RR_NV_Intel_Virtualization_Technology_for_Connectivity.pdf' (4 pages), 'Recommended_Readings/RR_NV_VXLAN.pdf' (9 pages).",
-              "page": "INSTRUCTION: Integer (1-indexed) representing the exact page number inside the cited PDF document.",
-              "section": "INSTRUCTION: String specifying the section number or name (e.g., 'Section 1', 'Section IV', 'Section 3.6').",
-              "label": "INSTRUCTION: Human-readable display badge (e.g., 'Feamster et al. (2014) §1 (p. 1)').",
+              "id": "INSTRUCTION: Unique identifier string matching an 'id' from the provided recommended readings literature index (e.g., 'rr-sdn-feamster14', 'rr-sdn-nunez23').",
+              "slide": "INSTRUCTION: Integer (1-indexed physical sheet/page number) corresponding to the cited section in that literature index.",
               "type": "literature"
             }
           ]
@@ -105,36 +96,26 @@
           "lecture_explanation": "In Software-Defined Networking (SDN), APIs are strictly categorized by their direction relative to the controller:\n- **Northbound API**: Resides between the SDN controller and the **application plane**, allowing higher-level orchestration software and policy engines to express intent.\n- **Southbound API**: Resides between the controller and the **data plane** (forwarding elements).\n\nOpenFlow is explicitly a **southbound protocol**. It provides the standardized wire protocol over TCP/TLS (default port `6653`) used by the controller to populate, modify, and monitor match-action flow tables directly in hardware forwarders.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 106,
+              "id": "lectures-dvad20",
               "slide": 106,
-              "label": "Slide 106",
-              "title": "The OpenFlow Environment",
               "type": "lecture"
             },
             {
-              "document": "Lectures_DVAD20_part2.pdf",
-              "page": 22,
+              "id": "lectures-dvad20",
               "slide": 172,
-              "label": "Slide 172",
-              "title": "The SDN Architecture",
               "type": "lecture"
             }
           ],
           "RR_addition": "Beyond simple interface classification, the literature highlights two critical systems insights regarding OpenFlow:\n1. **Breaking Vertical Integration**: OpenFlow standardized an open wire protocol that allowed commodity white-box switches (using merchant silicon like Broadcom) to be interchangeable across vendors, decoupling software innovation from silicon lifecycles.\n2. **Flow Setup Bottlenecks**: Early reactive OpenFlow architectures suffered severe flow-setup latency when the first packet of every flow triggered a `PACKET_IN` event to the remote controller. This bottleneck motivated the transition toward **multi-stage pipelining** in OpenFlow 1.3+ and eventually fully programmable data planes (**P4**), which process novel protocols locally at line rate without controller round-trips.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 1,
-              "section": "Section 1",
-              "label": "Feamster et al. (2014) §1 (p. 1)",
+              "id": "rr-sdn-feamster14",
+              "slide": 1,
               "type": "literature"
             },
             {
-              "document": "Recommended_Readings/RR_SDN_Nunez23.pdf",
-              "page": 3,
-              "section": "Section IV",
-              "label": "Nuñez et al. (2023) §IV (p. 3)",
+              "id": "rr-sdn-nunez23",
+              "slide": 3,
               "type": "literature"
             }
           ]
@@ -145,28 +126,21 @@
           "lecture_explanation": "The SDN controller maintains a centralized, globally coherent graph of the network topology by collecting link-state advertisements, port status notifications, and flow counter statistics from connected switches. This global visibility enables the controller to compute mathematically optimal routing paths and enforce consistent network-wide policies, rather than relying on decentralized, hop-by-hop local computations.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 93,
+              "id": "lectures-dvad20",
               "slide": 93,
-              "label": "Slide 93",
-              "title": "Characteristics of SDN",
               "type": "lecture"
             }
           ],
           "RR_addition": "The **logically centralized control plane** is a foundational pillar of SDN. Consolidating control state into a single logical entity eliminates transient routing loops and distributed convergence delays inherent in legacy protocols like OSPF and BGP. In production, controllers are physically distributed across server clusters using consensus protocols (such as Raft or Paxos) to solve the **controller placement problem** and ensure fault tolerance without single points of failure.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 1,
-              "section": "Section 1",
-              "label": "Feamster et al. (2014) §1 (p. 1)",
+              "id": "rr-sdn-feamster14",
+              "slide": 1,
               "type": "literature"
             },
             {
-              "document": "Recommended_Readings/RR_SDN_Nunez23.pdf",
-              "page": 3,
-              "section": "Section IV",
-              "label": "Nuñez et al. (2023) §IV (p. 3)",
+              "id": "rr-sdn-nunez23",
+              "slide": 3,
               "type": "literature"
             }
           ]
@@ -177,28 +151,21 @@
           "lecture_explanation": "Because SDN decouples complex routing computation from physical switches, forwarding devices no longer require expensive proprietary control CPUs or monolithic network operating systems. Instead, inexpensive **commodity white-box switches** powered by merchant silicon (e.g., Broadcom Trident/Tomahawk) that expose standard match-action flow tables can serve as the physical forwarding fabric.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 93,
+              "id": "lectures-dvad20",
               "slide": 93,
-              "label": "Slide 93",
-              "title": "Characteristics of SDN",
               "type": "lecture"
             }
           ],
           "RR_addition": "Commoditizing the data plane eliminated vendor lock-in and allowed hyper-scale data centers to scale cost-effectively. However, commodity merchant silicon initially faced trade-offs in **TCAM (Ternary Content Addressable Memory)** capacity: TCAM is expensive, power-hungry, and generates substantial heat. This constraint spurred innovations in multi-table flow pipelining and compression algorithms to pack fine-grained flow rules into shallow hardware memories.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 1,
-              "section": "Section 1",
-              "label": "Feamster et al. (2014) §1 (p. 1)",
+              "id": "rr-sdn-feamster14",
+              "slide": 1,
               "type": "literature"
             },
             {
-              "document": "Recommended_Readings/RR_SDN_Nunez23.pdf",
-              "page": 1,
-              "section": "Section I",
-              "label": "Nuñez et al. (2023) §I (p. 1)",
+              "id": "rr-sdn-nunez23",
+              "slide": 1,
               "type": "literature"
             }
           ]
@@ -209,21 +176,21 @@
           "lecture_explanation": "SDN is an architectural model centered on the logical separation of the control and data planes. It is completely media-agnostic and operates over electronic packet switches, standard twisted-pair copper Ethernet, virtual software switches (such as **Open vSwitch** on x86 servers), as well as optical transport networks.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 93,
+              "id": "lectures-dvad20",
               "slide": 93,
-              "label": "Slide 93",
-              "title": "Characteristics of SDN",
               "type": "lecture"
             }
           ],
           "RR_addition": "Data plane forwarding elements in SDN span a broad continuum, from software virtual switches running in hypervisors and user-space packet engines (`DPDK`) to hardware ASICs, FPGAs, and optical reconfigurable add-drop multiplexers (ROADMs). SDN defines software abstractions over forwarding state, making the physical transmission medium irrelevant to its principles.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 2,
-              "section": "Section 2",
-              "label": "Feamster et al. (2014) §2 (p. 2)",
+              "id": "rr-sdn-feamster14",
+              "slide": 1,
+              "type": "literature"
+            },
+            {
+              "id": "rr-sdn-nunez23",
+              "slide": 1,
               "type": "literature"
             }
           ]
@@ -234,36 +201,26 @@
           "lecture_explanation": "The explicit separation of the control plane (responsible for routing computation, state synchronization, and policy enforcement) from the data plane (responsible for line-rate packet classification, header manipulation, and forwarding) is the defining architectural pillar of SDN.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 91,
+              "id": "lectures-dvad20",
               "slide": 91,
-              "label": "Slide 91",
-              "title": "Centralized vs. Distributed Routing",
               "type": "lecture"
             },
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 93,
+              "id": "lectures-dvad20",
               "slide": 93,
-              "label": "Slide 93",
-              "title": "Characteristics of SDN",
               "type": "lecture"
             }
           ],
           "RR_addition": "Traditional distributed architectures co-locate routing computation and packet forwarding within every router chassis, requiring complex distributed consensus algorithms that converge slowly and risk transient routing loops. Separating the planes allows software control algorithms to evolve rapidly and compute mathematically optimal, network-wide forwarding paths based on a global view of network state.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 1,
-              "section": "Section 1",
-              "label": "Feamster et al. (2014) §1 (p. 1)",
+              "id": "rr-sdn-feamster14",
+              "slide": 1,
               "type": "literature"
             },
             {
-              "document": "Recommended_Readings/RR_SDN_Nunez23.pdf",
-              "page": 1,
-              "section": "Section I",
-              "label": "Nuñez et al. (2023) §I (p. 1)",
+              "id": "rr-sdn-nunez23",
+              "slide": 1,
               "type": "literature"
             }
           ]
@@ -274,36 +231,26 @@
           "lecture_explanation": "SDN eliminates the requirement for individual switches to autonomously execute distributed routing protocols (such as OSPF, IS-IS, or BGP). Forwarding rules are computed by the centralized controller and installed into switch flow tables over the southbound interface, reducing the switches to fast, deterministic execution engines.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 91,
+              "id": "lectures-dvad20",
               "slide": 91,
-              "label": "Slide 91",
-              "title": "Centralized vs. Distributed Routing",
               "type": "lecture"
             },
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 93,
+              "id": "lectures-dvad20",
               "slide": 93,
-              "label": "Slide 93",
-              "title": "Characteristics of SDN",
               "type": "lecture"
             }
           ],
           "RR_addition": "In legacy networking, each switch independently runs distributed routing algorithms that compute paths based on partial, local views of the topology. In SDN, centralizing path computation eliminates redundant distributed computation on switches, reduces hardware CPU requirements, and allows optimal multi-path traffic engineering that distributed protocols cannot achieve.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 1,
-              "section": "Section 1",
-              "label": "Feamster et al. (2014) §1 (p. 1)",
+              "id": "rr-sdn-feamster14",
+              "slide": 1,
               "type": "literature"
             },
             {
-              "document": "Recommended_Readings/RR_SDN_Nunez23.pdf",
-              "page": 3,
-              "section": "Section IV",
-              "label": "Nuñez et al. (2023) §IV (p. 3)",
+              "id": "rr-sdn-nunez23",
+              "slide": 3,
               "type": "literature"
             }
           ]
@@ -402,36 +349,26 @@
           "lecture_explanation": "In an OpenFlow-enabled SDN architecture, the controller populates match-action flow tables in data plane switches over the southbound TCP/TLS channel using two primary paradigms:\n- **Reactive Flow Installation**: Switches start with empty flow tables (except for a default table-miss entry). When the first packet of a new flow arrives and misses the table, the switch encapsulates the packet (or its headers) in an OpenFlow `PACKET_IN` message and sends it to the SDN controller. The controller computes the route, installs flow entries along the path via `FLOW_MOD` messages, and returns the packet via `PACKET_OUT`. Subsequent packets match the installed rule at line rate.\n- **Proactive Flow Installation**: The controller pre-computes and installs flow table rules via `FLOW_MOD` messages *before* data traffic arrives, typically using wildcard rules or aggregated IP prefixes so packets never trigger a table miss.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 106,
+              "id": "lectures-dvad20",
               "slide": 106,
-              "label": "Slide 106",
-              "title": "The OpenFlow Environment",
               "type": "lecture"
             },
             {
-              "document": "Lectures_DVAD20_part2.pdf",
-              "page": 22,
+              "id": "lectures-dvad20",
               "slide": 172,
-              "label": "Slide 172",
-              "title": "The SDN Architecture",
               "type": "lecture"
             }
           ],
           "RR_addition": "Purely reactive architectures introduce a severe control-plane **DoS**/**DDoS** vulnerability: high-rate microflow bursts (such as port scans or SYN floods) generate massive `PACKET_IN` storms that saturate the switch's internal **PCIe** management bus and overwhelm controller **CPU** capacity. Consequently, production networks combine coarse-grained proactive wildcard rules in hardware with rate-limited reactive handling or local edge classification.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 3,
-              "section": "Section 2",
-              "label": "Feamster et al. (2014) §2 (p. 3)",
+              "id": "rr-sdn-feamster14",
+              "slide": 3,
               "type": "literature"
             },
             {
-              "document": "Recommended_Readings/RR_SDN_Nunez23.pdf",
-              "page": 3,
-              "section": "Section IV",
-              "label": "Nuñez et al. (2023) §IV (p. 3)",
+              "id": "rr-sdn-nunez23",
+              "slide": 3,
               "type": "literature"
             }
           ]
@@ -443,36 +380,26 @@
           "lecture_explanation": "The two installation modes exhibit inverse trade-offs between latency and hardware memory consumption:\n- **Flow-Setup Latency**: Reactive installation incurs an extra controller round-trip time (**RTT**) plus controller processing delay on the first packet of every new flow, whereas proactive installation achieves $0$ controller RTT delay because forwarding rules are already resident in the data plane.\n- **TCAM Utilization**: Reactive installation conserves scarce **TCAM** space by only caching rules for currently active flows (evicting idle flows via `idle_timeout`). Proactive installation consumes significantly more TCAM capacity because all potential paths and policies must be pre-installed simultaneously.",
           "lecture_citations": [
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 93,
+              "id": "lectures-dvad20",
               "slide": 93,
-              "label": "Slide 93",
-              "title": "Characteristics of SDN",
               "type": "lecture"
             },
             {
-              "document": "Lectures_DVAD20_part1.pdf",
-              "page": 106,
+              "id": "lectures-dvad20",
               "slide": 106,
-              "label": "Slide 106",
-              "title": "The OpenFlow Environment",
               "type": "lecture"
             }
           ],
           "RR_addition": "In early OpenFlow 1.0 switches using a single flat match-action table, proactive policies across multiple header fields (such as source/destination **IP**, **VLAN**, and **QoS**) caused a Cartesian product explosion of rules that rapidly exhausted power-hungry hardware **TCAM** (which holds only a few thousand entries compared to larger **SRAM** exact-match tables). OpenFlow 1.3+ resolved this by introducing **multi-table pipelines** (`GOTO_TABLE`), reducing proactive rule storage complexity from $O(M \\times N)$ to $O(M + N)$.",
           "literature_citations": [
             {
-              "document": "Recommended_Readings/RR_SDN_Feamster14.pdf",
-              "page": 3,
-              "section": "Section 2",
-              "label": "Feamster et al. (2014) §2 (p. 3)",
+              "id": "rr-sdn-feamster14",
+              "slide": 3,
               "type": "literature"
             },
             {
-              "document": "Recommended_Readings/RR_SDN_Hauser21.pdf",
-              "page": 22,
-              "section": "Section 3.6",
-              "label": "Hauser et al. (2021) §3.6 (p. 22)",
+              "id": "rr-sdn-hauser21",
+              "slide": 22,
               "type": "literature"
             }
           ]
