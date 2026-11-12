@@ -3,6 +3,7 @@ import { Citation } from '../types';
 import { X, ExternalLink, ChevronLeft, ChevronRight, FileText, BookOpen } from 'lucide-react';
 import { resolveSourceUrl, cleanDocumentName } from '../utils/sourceUrls';
 import { resolveCitation } from '../utils/citationResolver';
+import { RichContent } from './RichContent';
 
 interface CitationModalProps {
   citation: Citation | null;
@@ -52,7 +53,7 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-sm text-slate-100 truncate">
-                  {resolved.title || docDisplayName}
+                  <RichContent content={resolved.title || docDisplayName} className="text-sm font-bold text-slate-100 [&>p]:inline" />
                 </span>
                 <span
                   className={`text-[0.68rem] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
@@ -67,7 +68,9 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
               <div className="text-xs text-slate-400 truncate flex items-center gap-2 mt-0.5">
                 <span>{resolved.document}</span>
                 {resolved.section && (
-                  <span className="text-slate-300 font-medium">• {resolved.section}</span>
+                  <span className="text-slate-300 font-medium inline-flex items-center gap-1">
+                    • <RichContent content={resolved.section} className="text-xs text-slate-300 font-medium [&>p]:inline" />
+                  </span>
                 )}
                 {resolved.slide && (
                   <span className="text-blue-300 font-medium">• Slide {resolved.slide}</span>

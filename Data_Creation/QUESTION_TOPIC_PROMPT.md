@@ -1,16 +1,3 @@
-# AI Prompt: Generate Syllabus Sections & Question Topics from Exam Papers
-
-> **Usage Instructions**:  
-> Provide this prompt to an LLM (Gemini, Claude, GPT, etc.) along with:
-> 1. The schema template: `question_topic_template.json` (or `question_topic_template.json.txt`)
-> 2. All available exam questions / papers for the course (e.g., from `src/data/exam_answers/*.json` or past exam PDFs)
-> 3. (Optional) Course syllabus, lecture outlines, or lecture slide titles
-
----
-
-## Prompt to Copy & Paste to the AI
-
-```markdown
 You are an expert university curriculum architect, exam analyst, and pedagogical designer.
 
 ### Objective
@@ -82,4 +69,3 @@ If titles or summaries contain formatting or mathematical expressions:
 - Do **NOT** include exam references or question text in this file; topics are pure category definitions.
 - Do **NOT** wrap the JSON in conversational commentary or introductory/conclusion text.
 - Ensure all JSON keys, braces, commas, and arrays are valid and parseable without syntax errors.
-```

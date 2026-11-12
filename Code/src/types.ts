@@ -77,6 +77,27 @@ export interface AppState {
   order: number[];
 }
 
+export interface LiteratureAdditionItem {
+  concept: string;
+  content: string;
+  citations?: Citation[];
+}
+
+export interface LectureSlideAddition {
+  slide: number;
+  title?: string;
+  section?: string;
+  literature_additions?: LiteratureAdditionItem[];
+  questions?: RawQuestion[];
+}
+
+export interface LectureAdditionFile {
+  lecture_id: string;
+  document: string;
+  title: string;
+  slides: LectureSlideAddition[];
+}
+
 export type {
   CourseMetadata,
   CheatSheetNumericalLimit,

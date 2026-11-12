@@ -343,22 +343,32 @@ export const TopicGuideView: React.FC<TopicGuideViewProps> = ({
 
       {/* Sections List (Level 1 Accordions) */}
       <div className="space-y-4">
-        {STUDY_SECTIONS.map((section) => (
-          <SectionItem
-            key={section.id}
-            section={section}
-            questionsMap={questionsMap}
-            isOpen={!!openSections[section.id]}
-            onToggleOpen={() => handleToggleSection(section.id)}
-            openTopics={openTopics}
-            onToggleTopic={handleToggleTopic}
-            reviewedTopics={reviewedTopics}
-            onToggleReviewed={handleToggleReviewed}
-            onOpenCitation={onOpenCitation}
-            activeExamFilter={activeExamFilter}
-            searchQuery={searchQuery}
-          />
-        ))}
+        {STUDY_SECTIONS.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-xl p-10 text-center shadow-xs flex flex-col items-center justify-center gap-3">
+            <Layers className="w-10 h-10 text-purple-400" />
+            <h3 className="text-base font-bold text-slate-800">Course Topic Guide Not Yet Generated</h3>
+            <p className="text-xs text-slate-500 max-w-md leading-relaxed">
+              No topic taxonomy or study sections are currently configured for this course. Add <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">question_topics.json</code> and <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">course_topic_guide.json</code> to view the structured 3-tier curriculum guide, or switch to Lecture View to explore course slide additions.
+            </p>
+          </div>
+        ) : (
+          STUDY_SECTIONS.map((section) => (
+            <SectionItem
+              key={section.id}
+              section={section}
+              questionsMap={questionsMap}
+              isOpen={!!openSections[section.id]}
+              onToggleOpen={() => handleToggleSection(section.id)}
+              openTopics={openTopics}
+              onToggleTopic={handleToggleTopic}
+              reviewedTopics={reviewedTopics}
+              onToggleReviewed={handleToggleReviewed}
+              onOpenCitation={onOpenCitation}
+              activeExamFilter={activeExamFilter}
+              searchQuery={searchQuery}
+            />
+          ))
+        )}
       </div>
 
       {/* Quick Cram Sheet Modal */}

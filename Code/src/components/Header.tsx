@@ -1,10 +1,10 @@
 import React from 'react';
-import { Menu, GraduationCap, ChevronLeft, ChevronRight, Shuffle, RotateCcw, Clock, Coffee, FileEdit, HelpCircle, BookOpen } from 'lucide-react';
+import { Menu, GraduationCap, ChevronLeft, ChevronRight, Shuffle, RotateCcw, Clock, Coffee, FileEdit, HelpCircle, BookOpen, FileText } from 'lucide-react';
 import { formatTime, getStage } from '../utils/renderContent';
 
 interface HeaderProps {
-  currentView: 'guide' | 'exam';
-  onChangeView: (view: 'guide' | 'exam') => void;
+  currentView: 'guide' | 'lecture' | 'exam';
+  onChangeView: (view: 'guide' | 'lecture' | 'exam') => void;
   onToggleDrawer: () => void;
   isStudyMode: boolean;
   onToggleStudyMode: () => void;
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="shrink-0 bg-white border-b border-[#e0e0e0] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs select-none">
       {/* View Mode Segmented Switcher & Exam Controls */}
       <div className="flex items-center flex-wrap gap-2 text-sm">
-        {/* Main Mode Toggle: Topic Guide vs Exam Mode */}
+        {/* Main Mode Toggle: Topic Guide vs Lecture View vs Exam Mode */}
         <div className="flex items-center p-0.5 bg-slate-100 rounded-lg border border-slate-300 shadow-2xs mr-1">
           <button
             type="button"
@@ -75,6 +75,19 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             type="button"
+            onClick={() => onChangeView('lecture')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+              currentView === 'lecture'
+                ? 'bg-amber-600 text-white shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+            }`}
+            title="Lecture View: Interactive slide browser with recommended readings and related exam questions"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Lecture View</span>
+          </button>
+          <button
+            type="button"
             onClick={() => onChangeView('exam')}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
               currentView === 'exam'
@@ -88,8 +101,8 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Exam Controls only shown when in Exam Practice Mode */}
-        {currentView === 'exam' && (
+        {/* Exam Controls only shown when in Exam Practice Mode and questions exist */}
+        {currentView === 'exam' && totalQuestions > 0 && (
           <>
             <button
               onClick={onToggleDrawer}
@@ -116,11 +129,12 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Browse Controls */}
-        {currentView === 'exam' && !isStudyMode && (
+        {currentView === 'exam' && !isStudyMode && totalQuestions > 0 && (
           <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
             <button
               onClick={onBrowsePrev}
-              className="flex items-center gap-1 bg-slate-500 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
+              disabled={totalQuestions <= 1}
+              className="flex items-center gap-1 bg-slate-500 hover:bg-slate-600 disabled:opacity-50 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
               title="Previous Question (Arrow Left)"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -128,7 +142,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={onBrowseNext}
-              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
+              disabled={totalQuestions <= 1}
+              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
               title="Next Question (Arrow Right)"
             >
               <span>Next</span>
@@ -141,11 +156,12 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Study Mode Controls */}
-        {currentView === 'exam' && isStudyMode && (
+        {currentView === 'exam' && isStudyMode && totalQuestions > 0 && (
           <div className="flex items-center flex-wrap gap-1.5 pl-2 border-l border-slate-200">
             <button
               onClick={onStudyPrev}
-              className="flex items-center gap-1 bg-slate-500 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
+              disabled={orderLength <= 1}
+              className="flex items-center gap-1 bg-slate-500 hover:bg-slate-600 disabled:opacity-50 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
               title="Previous Study Question"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -153,7 +169,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={onStudyNext}
-              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
+              disabled={orderLength <= 1}
+              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
               title="Next Study Question"
             >
               <span>Next</span>
@@ -161,7 +178,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={onReroll}
-              className="flex items-center gap-1 bg-[#d84315] hover:bg-[#bf360c] text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
+              disabled={orderLength <= 1}
+              className="flex items-center gap-1 bg-[#d84315] hover:bg-[#bf360c] disabled:opacity-50 text-white px-2.5 py-1.5 rounded-sm font-semibold text-xs transition cursor-pointer"
               title="Reroll & Reshuffle Questions Order"
             >
               <Shuffle className="w-3.5 h-3.5" />

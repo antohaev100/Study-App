@@ -1,16 +1,17 @@
 {
-  "_comment": "Course Study App — Lecture Slides Index Template. Each top-level key corresponds to the bare PDF filename of the slide deck in the sources directory. The internal structure matches the Recommended Readings index exactly.",
+  "_comment": "Course Study App — Lecture Slides Index Template. Each top-level key corresponds to the bare PDF filename of the slide deck. CRITICAL INSTRUCTION: Every single physical slide from 1 to total_slides MUST have an entry in pageMap without skipping any slides.",
   "DVAD27_Lectures.pdf": {
     "id": "lectures-dvad27",
     "title": "Systems Modeling and Simulation: Core Lecture Slides",
     "author": "Department of Computer Science",
     "description": "Core lecture slide deck covering performance comparison, statistical ANOVA, Monte Carlo and discrete-event simulation architecture, and NS-2 network simulation scripting.",
-    "pages": 450,
+    "total_slides": 450,
+    "total_pages": 448,
     "pageMap": [
       {
         "slide": 1,
         "page": null,
-        "title": "Comparisons and ANOVA: Title and Overview",
+        "title": "Course Overview and Syllabus",
         "section": "Course Introduction"
       },
       {
@@ -38,10 +39,34 @@
         "section": "Comparisons and ANOVA"
       },
       {
-        "slide": 106,
-        "page": 105,
-        "title": "Discrete-Event Simulation (DES) Architecture",
-        "section": "Simulation Modeling"
+        "slide": 6,
+        "page": 5,
+        "title": "Confidence Interval Interpretation and Practical Significance",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 7,
+        "page": 6,
+        "title": "Small Sample Inferences and Normal Distribution Requirements",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 8,
+        "page": 7,
+        "title": "Paired vs. Unpaired Observations: Criteria for Selection",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 9,
+        "page": 8,
+        "title": "Paired Observations: One-Sample t-Test on Differences",
+        "section": "Comparisons and ANOVA"
+      },
+      {
+        "slide": 10,
+        "page": 9,
+        "title": "Visualizing Confidence Intervals and Deciding Equivalence",
+        "section": "Comparisons and ANOVA"
       }
     ]
   }

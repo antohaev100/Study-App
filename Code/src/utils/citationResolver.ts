@@ -9,13 +9,22 @@ export interface PageMapEntry {
   headings?: string[];
 }
 
+export interface OutlineNode {
+  title: string;
+  slides: [number, number];
+  children?: OutlineNode[];
+}
+
 export interface DocumentIndexEntry {
   id?: string;
   title?: string;
   author?: string;
   description?: string;
+  total_slides?: number;
+  total_pages?: number | null;
   pages?: number;
   pageMap?: PageMapEntry[];
+  outline?: OutlineNode[];
   // Legacy format support
   document?: string;
   slide?: number;
@@ -61,7 +70,7 @@ function buildIndexLookups(rawIndex: Record<string, DocumentIndexEntry>) {
   const legacySlides = new Map<number, DocumentIndexEntry>();
 
   for (const [key, val] of Object.entries(rawIndex)) {
-    if (!val) continue;
+    if (!val || key.startsWith('_') || key.startsWith('$') || key === 'markdown_and_latex_support') continue;
 
     // Detect legacy slides_index format where key is a slide number (e.g. "1", "2")
     if (/^\d+$/.test(key) && val.document) {
@@ -108,6 +117,52 @@ function buildIndexLookups(rawIndex: Record<string, DocumentIndexEntry>) {
 const slidesIndex = buildIndexLookups(rawSlidesIndex);
 const rrIndex = buildIndexLookups(rawRrIndex);
 
+interface OutlineMatch {
+  title: string;
+  section: string;
+}
+
+/**
+ * Recursively searches an outline tree for the node whose inclusive
+ * [start_slide, end_slide] range contains slideNum.
+ * If multiple siblings at the same level overlap on slideNum,
+ * resolves to their parent node (returns null to caller).
+ */
+function findOutlineMatch(
+  nodes: OutlineNode[] | undefined,
+  slideNum: number,
+  ancestors: string[] = []
+): OutlineMatch | null {
+  if (!Array.isArray(nodes) || nodes.length === 0) return null;
+
+  const matchingNodes = nodes.filter(
+    (node) =>
+      node &&
+      Array.isArray(node.slides) &&
+      node.slides.length >= 2 &&
+      slideNum >= node.slides[0] &&
+      slideNum <= node.slides[1]
+  );
+
+  // If no match or multiple siblings overlap on this slide, resolve to parent
+  if (matchingNodes.length !== 1) {
+    return null;
+  }
+
+  const matched = matchingNodes[0];
+  const currentPath = [...ancestors, matched.title];
+
+  const childMatch = findOutlineMatch(matched.children, slideNum, currentPath);
+  if (childMatch) {
+    return childMatch;
+  }
+
+  return {
+    title: matched.title,
+    section: ancestors.join(' › '),
+  };
+}
+
 /**
  * Resolves a citation (either minimal { id, slide, type } or legacy full object)
  * into a complete, display-ready citation with label, title, page, and url.
@@ -148,6 +203,7 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
 
   const slideNum = cite.slide ?? legacyEntry?.slide ?? cite.page ?? 1;
   const pageMapEntry = matchedLookup?.slidesMap.get(slideNum);
+  const outlineMatch = !pageMapEntry ? findOutlineMatch(matchedLookup?.doc.outline, slideNum) : null;
 
   // Determine physical page for viewer URL navigation (always slideNum in PDF)
   const resolvedPage = slideNum;
@@ -157,12 +213,13 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
     matchedLookup?.filename ||
     cite.document ||
     legacyEntry?.document ||
-    (type === 'lecture' ? 'DVAD27_Lectures.pdf' : '');
+    (type === 'lecture' ? 'Lectures.pdf' : '');
 
   const docTitle = matchedLookup?.doc.title || '';
   const resolvedTitle =
     cite.title ||
     pageMapEntry?.title ||
+    outlineMatch?.title ||
     legacyEntry?.title ||
     docTitle ||
     resolvedDoc.replace(/\.pdf$/i, '');
@@ -170,6 +227,8 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
   const resolvedSection =
     cite.section ||
     pageMapEntry?.section ||
+    outlineMatch?.section ||
+    (outlineMatch && docTitle && outlineMatch.title !== docTitle ? docTitle : '') ||
     legacyEntry?.section ||
     '';
 
@@ -181,7 +240,11 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
     } else {
       const authorOrTitle = matchedLookup?.doc.author || docTitle || resolvedDoc.replace(/\.pdf$/i, '');
       const shortAuthor = authorOrTitle.split(',')[0].replace(/\(.*?\)/g, '').trim();
-      const pageStr = displayPage ? `p. ${displayPage}` : `Slide ${slideNum}`;
+      const pageStr = pageMapEntry?.page
+        ? `p. ${pageMapEntry.page}`
+        : cite.page
+          ? `p. ${cite.page}`
+          : `Slide ${slideNum}`;
       resolvedLabel = shortAuthor ? `${shortAuthor} (${pageStr})` : pageStr;
     }
   }

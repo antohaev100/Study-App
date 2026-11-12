@@ -1,68 +1,122 @@
 {
-  "_comment": "Course Study App — Recommended Readings (RR) Literature Index Template. If the course does not use supplementary readings or literature, provide an empty object '{}'. Otherwise, each top-level key corresponds to the bare PDF filename of the literature source in the sources directory.",
+  "_comment": "Course Study App — Recommended Readings (RR) Hierarchical Literature Index Template. If no literature is used, output '{}'. Keys are bare PDF filenames.",
+  "markdown_and_latex_support": {
+    "note": "ALL STRING FIELDS (title, author, description, outline[].title) SUPPORT FULL GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', and '$O(M \\times N)$'. Never write unescaped '\\t' or '\\f'. Escape literal dollar signs in prose as \\$.",
+    "code_and_math_rules": "Use backticks (`$var`) exclusively for code, shell syntax, packet headers, and script variables; use dollar signs ($math$) exclusively for LaTeX math (never nest backticks in math). Never output raw HTML/MathML tags like <span class='katex'> or <math>. Escape literal dollar signs in prose as \\$."
+  },
+  "_schema_field_definitions": {
+    "id": "String. Unique kebab-case identifier used for internal system references and citations.",
+    "title": "MARKDOWN & LATEX STRING FIELD. Full canonical title of the literature piece.",
+    "author": "MARKDOWN & LATEX STRING FIELD. Authors, research group, or organization with publication year.",
+    "description": "MARKDOWN & LATEX STRING FIELD. Brief synopsis (1-2 sentences) of the document's relevance.",
+    "total_slides": "Integer. Total physical sheets/slides in the PDF file.",
+    "outline": "Array of recursive Node objects representing chapters, sections, and structural parts.",
+    "outline[].title": "MARKDOWN & LATEX STRING FIELD. Section, chapter, or topic title.",
+    "outline[].slides": "Array of 2 Integers: [start_slide, end_slide]. 1-indexed inclusive PDF sheet bounds.",
+    "outline[].children": "Array of Node objects (Optional). Arbitrarily nested sub-sections or sub-topics."
+  },
   "RR_measuring-computer-performance-a-practitioners-guide.pdf": {
     "id": "rr-lilja-perf",
     "title": "Measuring Computer Performance: A Practitioner's Guide",
     "author": "David J. Lilja (2000)",
     "description": "Comprehensive textbook on experimental computer systems performance evaluation, covering metric selection, statistical summarizing, error models, measurement instrumentation, benchmarking, and experimental design.",
-    "pages": 187,
-    "pageMap": [
+    "total_slides": 187,
+    "outline": [
       {
-        "slide": 1,
-        "page": null,
-        "title": "Cover and Title Page",
-        "section": "Front Matter"
+        "title": "Front Matter",
+        "slides": [1, 10],
+        "children": [
+          {
+            "title": "Table of Contents",
+            "slides": [6, 7]
+          },
+          {
+            "title": "Preface & Objectives",
+            "slides": [8, 9]
+          }
+        ]
       },
       {
-        "slide": 8,
-        "page": null,
-        "title": "Table of Contents",
-        "section": "Front Matter"
+        "title": "Chapter 1: Overview",
+        "slides": [11, 28],
+        "children": [
+          {
+            "title": "1.1 Introduction to Evaluation Techniques",
+            "slides": [11, 15]
+          },
+          {
+            "title": "1.2 System Boundaries and Metrics",
+            "slides": [16, 22],
+            "children": [
+              {
+                "title": "1.2.1 Defining the System Boundary",
+                "slides": [16, 18]
+              },
+              {
+                "title": "1.2.2 Metric Selection & Trade-offs",
+                "slides": [19, 22]
+              }
+            ]
+          },
+          {
+            "title": "1.3 Summary and Exercises",
+            "slides": [23, 28]
+          }
+        ]
       },
       {
-        "slide": 19,
-        "page": 1,
-        "title": "Introduction to Performance Evaluation",
-        "section": "Chapter 1: Overview"
-      },
-      {
-        "slide": 26,
-        "page": 8,
-        "title": "Selection of Techniques and Metrics",
-        "section": "Chapter 1: Selection of Techniques and Metrics"
-      },
-      {
-        "slide": 45,
-        "page": 27,
-        "title": "Measurement Tools and Performance Monitors",
-        "section": "Chapter 2: Measurement Tools"
+        "title": "Chapter 2: Measurement Tools and Techniques",
+        "slides": [29, 54],
+        "children": [
+          {
+            "title": "2.1 Hardware Monitors",
+            "slides": [29, 40]
+          },
+          {
+            "title": "2.2 Software Monitors",
+            "slides": [41, 54]
+          }
+        ]
       }
     ]
   },
-  "RR_PERFORMANCE_EVALUATION.pdf": {
-    "id": "rr-le-boudec-perf",
-    "title": "Performance Evaluation of Computer and Communication Systems",
-    "author": "Jean-Yves Le Boudec (2010)",
-    "description": "Foundational treatise on performance evaluation methodologies, benchmark tests, confidence intervals, queueing theory, and stochastic simulation validation.",
-    "pages": 302,
-    "pageMap": [
+  "RR_Feamster_SDN_Survey.pdf": {
+    "id": "rr-feamster-sdn",
+    "title": "The Road to SDN: An Intellectual History of Programmable Networks",
+    "author": "Nick Feamster, Jennifer Rexford, and Ellen Zegura (2014)",
+    "description": "Survey charting four decades of network programmability history leading up to contemporary Software-Defined Networking architecture.",
+    "total_slides": 14,
+    "outline": [
       {
-        "slide": 1,
-        "page": null,
-        "title": "Title Page and Acknowledgements",
-        "section": "Front Matter"
+        "title": "Abstract and Introduction",
+        "slides": [1, 3]
       },
       {
-        "slide": 8,
-        "page": 2,
-        "title": "The Scientific Method in Computer Science",
-        "section": "Chapter 1: Model Construction and Verification"
+        "title": "Active Networking (Mid-1990s to Early 2000s)",
+        "slides": [4, 6]
       },
       {
-        "slide": 14,
-        "page": 8,
-        "title": "Benchmarking Traps and Metric Fallacies",
-        "section": "Chapter 1: Model Construction and Verification"
+        "title": "Control and Data Plane Separation (Early to Mid-2000s)",
+        "slides": [7, 9],
+        "children": [
+          {
+            "title": "Open Signaling and Network APIs",
+            "slides": [7, 8]
+          },
+          {
+            "title": "Ethane and the Genesis of OpenFlow",
+            "slides": [8, 9]
+          }
+        ]
+      },
+      {
+        "title": "The OpenFlow API and Modern SDN",
+        "slides": [10, 12]
+      },
+      {
+        "title": "Conclusion and Open Challenges",
+        "slides": [13, 14]
       }
     ]
   }

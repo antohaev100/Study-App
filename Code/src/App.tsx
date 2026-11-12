@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { rawExamBlocks } from './utils/loadExams';
+import { rawLectureAdditions } from './utils/loadLectureAdditions';
+import { STUDY_SECTIONS } from './utils/topicStructure';
 import { QuestionEntry, RawExamBlock, Citation } from './types';
 import { Header } from './components/Header';
 import { QuestionsDrawer } from './components/QuestionsDrawer';
@@ -8,8 +10,9 @@ import { QuestionCard } from './components/QuestionCard';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { CitationModal } from './components/CitationModal';
 import { SourcesLibraryModal } from './components/SourcesLibraryModal';
-
 import { TopicGuideView } from './components/topicGuide/TopicGuideView';
+import { LectureView } from './components/lectureView/LectureView';
+import { BookOpen, GraduationCap } from 'lucide-react';
 
 const LOCAL_STORAGE_STATE_KEY = 'course_study_app_state_v2';
 const LOCAL_STORAGE_NOTES_KEY = 'course_study_app_notes_v2';
@@ -105,14 +108,35 @@ export default function App() {
   const [qElapsed, setQElapsed] = useState<number>(() => savedState?.qElapsed || 0);
   const [bElapsed, setBElapsed] = useState<number>(() => savedState?.bElapsed || 0);
 
-  // View mode state (Topic Guide vs Exam Practice)
-  const [currentView, setCurrentView] = useState<'guide' | 'exam'>(() => {
+  // View mode state (Topic Guide vs Lecture View vs Exam Practice)
+  const [currentView, setCurrentView] = useState<'guide' | 'lecture' | 'exam'>(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_VIEW_KEY);
-      return saved === 'guide' || saved === 'exam' ? saved : 'guide';
+      if (saved === 'guide' || saved === 'lecture' || saved === 'exam') {
+        // If saved was exam but no questions exist, fall back to available view
+        if (saved === 'exam' && entries.length === 0) {
+          return rawLectureAdditions.length > 0 ? 'lecture' : 'guide';
+        }
+        // If saved was guide but no sections exist, fall back to lecture
+        if (saved === 'guide' && STUDY_SECTIONS.length === 0 && rawLectureAdditions.length > 0) {
+          return 'lecture';
+        }
+        return saved;
+      }
     } catch {
+      // ignore
+    }
+
+    // Default heuristics for newly loaded courses:
+    // If lecture additions exist and topic guide does not, open lecture view
+    if (rawLectureAdditions.length > 0 && STUDY_SECTIONS.length === 0) {
+      return 'lecture';
+    }
+    // If topic guide exists, default to topic guide
+    if (STUDY_SECTIONS.length > 0) {
       return 'guide';
     }
+    return 'lecture';
   });
 
   useEffect(() => {
@@ -136,7 +160,7 @@ export default function App() {
 
   // Active question depends on mode
   const activeEntryIndex = isStudyMode ? order[currentIndex] ?? 0 : browseIndex;
-  const currentQuestion = entries[activeEntryIndex] || entries[0];
+  const currentQuestion: QuestionEntry | null = entries[activeEntryIndex] || entries[0] || null;
   const questionKey = currentQuestion ? currentQuestion.id : 'default';
 
   // Save state to localStorage whenever main state changes
@@ -193,24 +217,29 @@ export default function App() {
   }, []);
 
   const handleStudyNext = useCallback(() => {
+    if (order.length === 0) return;
     setQElapsed(0);
     setCurrentIndex((prev) => (prev + 1) % order.length);
   }, [order.length]);
 
   const handleStudyPrev = useCallback(() => {
+    if (order.length === 0) return;
     setQElapsed(0);
     setCurrentIndex((prev) => (prev - 1 + order.length) % order.length);
   }, [order.length]);
 
   const handleBrowseNext = useCallback(() => {
+    if (entries.length === 0) return;
     setBrowseIndex((prev) => (prev + 1) % entries.length);
   }, [entries.length]);
 
   const handleBrowsePrev = useCallback(() => {
+    if (entries.length === 0) return;
     setBrowseIndex((prev) => (prev - 1 + entries.length) % entries.length);
   }, [entries.length]);
 
   const handleReroll = useCallback(() => {
+    if (entries.length === 0) return;
     const newOrder = shuffleArray(entries.length);
     setOrder(newOrder);
     setCurrentIndex(0);
@@ -312,14 +341,14 @@ export default function App() {
         toggleDrawer();
       } else if (e.key.toLowerCase() === 'v') {
         e.preventDefault();
-        setCurrentView((prev) => (prev === 'guide' ? 'exam' : 'guide'));
+        setCurrentView((prev) => (prev === 'guide' ? 'lecture' : prev === 'lecture' ? 'exam' : 'guide'));
       } else if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
         setIsNotesOpen((prev) => !prev);
-      } else if (e.key.toLowerCase() === 'r' && isStudyMode) {
+      } else if (e.key.toLowerCase() === 'r' && isStudyMode && entries.length > 0) {
         e.preventDefault();
         handleReroll();
-      } else if (e.key.toLowerCase() === 'a') {
+      } else if (e.key.toLowerCase() === 'a' && currentQuestion) {
         e.preventDefault();
         handleRevealAll();
       } else if (e.key >= '1' && e.key <= '9') {
@@ -356,15 +385,8 @@ export default function App() {
     handleRevealAll,
     handleToggleAlternative,
     currentQuestion,
+    entries.length,
   ]);
-
-  if (!currentQuestion) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-slate-500 text-sm">
-        Loading questions...
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-[#f4f6f8] text-[#2c3e50] overflow-hidden">
@@ -393,7 +415,7 @@ export default function App() {
         onOpenSourcesLibrary={() => setIsSourcesLibraryOpen(true)}
       />
 
-      {/* Main Workspace Area: Conditional between Topic Guide (Blueprint) and Exam Practice Mode */}
+      {/* Main Workspace Area: Conditional between Topic Guide, Lecture View, and Exam Practice Mode */}
       {currentView === 'guide' ? (
         <main
           className="flex-1 min-h-0 h-full overflow-hidden flex flex-col bg-[#f8fafc]"
@@ -406,6 +428,13 @@ export default function App() {
           <TopicGuideView
             scrollRef={guideScrollRef}
             entries={entries}
+            onOpenCitation={handleOpenCitation}
+            onOpenSourcesLibrary={() => setIsSourcesLibraryOpen(true)}
+          />
+        </main>
+      ) : currentView === 'lecture' ? (
+        <main className="flex-1 min-h-0 h-full overflow-hidden flex flex-col bg-slate-100">
+          <LectureView
             onOpenCitation={handleOpenCitation}
             onOpenSourcesLibrary={() => setIsSourcesLibraryOpen(true)}
           />
@@ -440,15 +469,40 @@ export default function App() {
               }
             }}
           >
-            <QuestionCard
-              scrollRef={practiceScrollRef}
-              question={currentQuestion}
-              revealedStates={revealedStates}
-              onToggleAlternative={handleToggleAlternative}
-              onRevealAll={handleRevealAll}
-              onResetRevealed={handleResetRevealed}
-              onOpenCitation={handleOpenCitation}
-            />
+            {currentQuestion ? (
+              <QuestionCard
+                scrollRef={practiceScrollRef}
+                question={currentQuestion}
+                revealedStates={revealedStates}
+                onToggleAlternative={handleToggleAlternative}
+                onRevealAll={handleRevealAll}
+                onResetRevealed={handleResetRevealed}
+                onOpenCitation={handleOpenCitation}
+              />
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <div className="bg-white p-8 rounded-2xl shadow-xs border border-slate-200 max-w-md flex flex-col items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <GraduationCap className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">No Exam Questions Yet</h2>
+                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                      Solved exam question files have not yet been added to <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">src/data/exam_answers/</code> for this course.
+                      You can explore the lecture slides and literature additions in the meantime.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('lecture')}
+                    className="mt-2 flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Switch to Lecture View</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </main>
         </div>
       )}

@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { X, BookOpen, FileText, GraduationCap, ArrowUpRight } from 'lucide-react';
 import { Citation } from '../types';
 import { resolveSourceUrl } from '../utils/sourceUrls';
+import { OutlineNode } from '../utils/citationResolver';
+import { RichContent } from './RichContent';
 
 interface SourcesLibraryModalProps {
   isOpen: boolean;
@@ -30,8 +32,11 @@ interface DocEntry {
   title?: string;
   author?: string;
   description?: string;
+  total_slides?: number;
+  total_pages?: number | null;
   pages?: number;
   pageMap?: PageMapEntry[];
+  outline?: OutlineNode[];
   document?: string;
   slide?: number;
   page?: number;
@@ -86,11 +91,12 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
             }
           }
 
+          const slideCount = doc.total_slides || doc.pages || doc.pageMap?.length || 0;
           const desc =
             doc.description ||
             (firstTitles.length > 0
               ? `Topics: ${firstTitles.join(', ')}`
-              : `${doc.pages || doc.pageMap?.length || 0} slides indexed`);
+              : `${slideCount} slides indexed`);
 
           return {
             title: cleanTitle,
@@ -163,7 +169,12 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
   const readings = useMemo(() => {
     const rrRecord = (rawRrIndex || {}) as Record<string, DocEntry>;
     return Object.entries(rrRecord)
-      .filter(([key]) => !key.startsWith('_'))
+      .filter(
+        ([key]) =>
+          !key.startsWith('_') &&
+          !key.startsWith('$') &&
+          key !== 'markdown_and_latex_support'
+      )
       .map(([fileName, data]) => {
         const cleanTitle =
           data.title ||
@@ -178,7 +189,13 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
             : `Recommended_Readings/${fileName}`;
 
         const firstHeadings: string[] = [];
-        if (Array.isArray(data?.pageMap)) {
+        if (Array.isArray(data?.outline)) {
+          for (const node of data.outline) {
+            if (node.title && !firstHeadings.includes(node.title) && firstHeadings.length < 4) {
+              firstHeadings.push(node.title);
+            }
+          }
+        } else if (Array.isArray(data?.pageMap)) {
           for (const pm of data.pageMap) {
             const h = pm.title || pm.section || pm.headings?.[0];
             if (h && !firstHeadings.includes(h) && firstHeadings.length < 4) {
@@ -187,11 +204,18 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
           }
         }
 
+        const slideCount = data.total_slides || data.pages || 0;
+        const pageCount = data.total_pages;
+        const countSummary =
+          typeof pageCount === 'number'
+            ? `${slideCount} sheets (${pageCount} numbered pages)`
+            : `${slideCount} sheets reference material`;
+
         const description =
           data.description ||
           (firstHeadings.length > 0
             ? `Key sections: ${firstHeadings.join(', ')}`
-            : `${data.pages || 0} pages reference material`);
+            : countSummary);
 
         return {
           title: cleanTitle,
@@ -305,15 +329,15 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
                   >
                     <div>
                       <div className="text-[0.7rem] font-semibold text-amber-800 mb-0.5">
-                        {item.author}
+                        <RichContent content={item.author} className="text-[0.7rem] text-amber-800 font-semibold [&>p]:inline" />
                       </div>
                       <h3 className="font-semibold text-xs text-slate-900 group-hover:text-amber-800 mb-1 flex items-start justify-between gap-2">
-                        <span>{item.title}</span>
+                        <RichContent content={item.title} className="text-xs font-semibold text-slate-900 group-hover:text-amber-800 [&>p]:inline" />
                         <BookOpen className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                       </h3>
-                      <p className="text-[0.75rem] text-slate-600 leading-relaxed mb-3">
-                        {item.description}
-                      </p>
+                      <div className="text-[0.75rem] text-slate-600 leading-relaxed mb-3">
+                        <RichContent content={item.description} className="text-[0.75rem] text-slate-600 leading-relaxed [&>p]:m-0" />
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
                       <button

@@ -152,7 +152,11 @@ export const QuestionsDrawer: React.FC<QuestionsDrawerProps> = ({
 
         {/* Drawer Content */}
         <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
-          {Object.keys(filteredGroups).length === 0 ? (
+          {entries.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              No exam questions loaded for this course.
+            </div>
+          ) : Object.keys(filteredGroups).length === 0 ? (
             <div className="p-8 text-center text-sm text-slate-400">
               No matching questions found for "{search}"
             </div>

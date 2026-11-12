@@ -3,6 +3,8 @@ import { QuestionEntry, Alternative, SubQuestion, Citation } from '../types';
 import { RichContent } from './RichContent';
 import { resolveSourceUrl } from '../utils/sourceUrls';
 import { resolveCitation } from '../utils/citationResolver';
+import { formatQuestionForClipboard } from '../utils/questionFormatters';
+import { CitationBadge } from './common/CitationBadge';
 import {
   Copy,
   Check,
@@ -48,112 +50,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     setShowAbbreviations(false);
   }, [question.id]);
 
-  const formatCopyText = (item: QuestionEntry): string => {
-    const sections: string[] = [];
-    let headerText = `Exam: ${item.exam} — Question ${item.number}`;
-    if (typeof item.points === 'number' && !isNaN(item.points)) {
-      headerText += ` (${item.points} ${item.points === 1 ? 'Point' : 'Points'})`;
-    }
-    if (item.type === 'written') {
-      headerText += ` [Written Question]`;
-    }
-    sections.push(headerText);
-
-    if (item.context && item.context.trim()) {
-      sections.push(`Context / Scenario:\n${item.context.trim()}`);
-    }
-
-    if (item.question && item.question.trim()) {
-      sections.push(`Question Prompt:\n${item.question.trim()}`);
-    }
-
-    if (item.type === 'written' && item.sub_questions && item.sub_questions.length > 0) {
-      const subLines: string[] = ['Subquestions & Model Answers:'];
-      item.sub_questions.forEach((sub, idx) => {
-        const lbl = sub.label ? `(${sub.label})` : `(${idx + 1})`;
-        const pts = typeof sub.points === 'number' && !isNaN(sub.points) ? ` [${sub.points} pts]` : '';
-        const entryParts = [`${lbl}${pts} ${sub.question.trim()}`];
-
-        if (sub.lecture_explanation) {
-          entryParts.push(`  Model Answer:\n  ${sub.lecture_explanation.trim()}`);
-          if (sub.lecture_citations && sub.lecture_citations.length > 0) {
-            const cites = sub.lecture_citations
-              .map((c) => {
-                const res = resolveCitation(c);
-                return `[${res.label}](${res.url})`;
-              })
-              .join(', ');
-            entryParts.push(`  Citations: ${cites}`);
-          }
-        }
-
-        if (sub.RR_addition) {
-          entryParts.push(`  Literature Addition:\n  ${sub.RR_addition.trim()}`);
-          if (sub.literature_citations && sub.literature_citations.length > 0) {
-            const cites = sub.literature_citations
-              .map((c) => {
-                const res = resolveCitation(c);
-                return `[${res.label}](${res.url})`;
-              })
-              .join(', ');
-            entryParts.push(`  Literature Citations: ${cites}`);
-          }
-        }
-
-        subLines.push(entryParts.join('\n'));
-      });
-      sections.push(subLines.join('\n\n'));
-    } else if (item.alternatives && item.alternatives.length > 0) {
-      const altLines: string[] = ['Alternatives:'];
-      item.alternatives.forEach((alt, idx) => {
-        const letter = String.fromCharCode(65 + idx);
-        const status = alt.is_correct ? 'True' : 'False';
-        const entryParts = [`(${letter}) [${status}] ${alt.text.trim()}`];
-
-        if (alt.lecture_explanation) {
-          entryParts.push(`  Lecture Explanation:\n  ${alt.lecture_explanation.trim()}`);
-          if (alt.lecture_citations && alt.lecture_citations.length > 0) {
-            const cites = alt.lecture_citations
-              .map((c) => {
-                const res = resolveCitation(c);
-                return `[${res.label}](${res.url})`;
-              })
-              .join(', ');
-            entryParts.push(`  Citations: ${cites}`);
-          }
-        }
-
-        if (alt.RR_addition) {
-          entryParts.push(`  Literature Addition:\n  ${alt.RR_addition.trim()}`);
-          if (alt.literature_citations && alt.literature_citations.length > 0) {
-            const cites = alt.literature_citations
-              .map((c) => {
-                const res = resolveCitation(c);
-                return `[${res.label}](${res.url})`;
-              })
-              .join(', ');
-            entryParts.push(`  Literature Citations: ${cites}`);
-          }
-        }
-
-        altLines.push(entryParts.join('\n'));
-      });
-      sections.push(altLines.join('\n\n'));
-    }
-
-    if (item.abbreviations && item.abbreviations.length > 0) {
-      const abbrLines: string[] = ['Abbreviations & Pronunciations:'];
-      item.abbreviations.forEach((abbr) => {
-        abbrLines.push(`• ${abbr.abbreviation} (${abbr.pronunciation}): ${abbr.phrase}`);
-      });
-      sections.push(abbrLines.join('\n'));
-    }
-
-    return sections.join('\n\n---\n\n');
-  };
-
   const handleCopy = async () => {
-    const text = formatCopyText(question);
+    const text = formatQuestionForClipboard(question);
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(text);
@@ -461,29 +359,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                               <span className="text-[0.68rem] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1 mr-1">
                                 <Bookmark className="w-3 h-3 text-blue-600" /> Cited Slide(s):
                               </span>
-                              {subQ.lecture_citations.map((rawCite, cIdx) => {
-                                const cite = resolveCitation(rawCite);
-                                return (
-                                  <button
-                                    key={cIdx}
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onOpenCitation(cite);
-                                    }}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-semibold bg-blue-100/80 hover:bg-blue-200 text-blue-800 border border-blue-200 transition cursor-pointer"
-                                    title={`Click to review ${cite.document} at page ${cite.page} in the in-app viewer`}
-                                  >
-                                    <ExternalLink className="w-2.5 h-2.5 text-blue-600 shrink-0" />
-                                    <span>{cite.label}</span>
-                                    {cite.title && (
-                                      <span className="opacity-70 font-normal max-w-[130px] truncate hidden sm:inline">
-                                        • {cite.title}
-                                      </span>
-                                    )}
-                                  </button>
-                                );
-                              })}
+                              {subQ.lecture_citations.map((cite, cIdx) => (
+                                <CitationBadge
+                                  key={cIdx}
+                                  citation={cite}
+                                  onOpenCitation={onOpenCitation}
+                                />
+                              ))}
                             </div>
                           )}
                         </div>
@@ -504,29 +386,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                               <span className="text-[0.68rem] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1 mr-1">
                                 <BookOpen className="w-3 h-3 text-amber-600" /> Literature Source(s):
                               </span>
-                              {subQ.literature_citations.map((rawCite, cIdx) => {
-                                const cite = resolveCitation(rawCite);
-                                return (
-                                  <button
-                                    key={cIdx}
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onOpenCitation(cite);
-                                    }}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-semibold bg-amber-100/80 hover:bg-amber-200 text-amber-900 border border-amber-200 transition cursor-pointer"
-                                    title={`Click to review ${cite.document} at page ${cite.page} in the in-app viewer`}
-                                  >
-                                    <ExternalLink className="w-2.5 h-2.5 text-amber-700 shrink-0" />
-                                    <span>{cite.label}</span>
-                                    {cite.section && (
-                                      <span className="opacity-70 font-normal max-w-[130px] truncate hidden sm:inline">
-                                        • {cite.section}
-                                      </span>
-                                    )}
-                                  </button>
-                                );
-                              })}
+                              {subQ.literature_citations.map((cite, cIdx) => (
+                                <CitationBadge
+                                  key={cIdx}
+                                  citation={cite}
+                                  onOpenCitation={onOpenCitation}
+                                />
+                              ))}
                             </div>
                           )}
                         </div>
@@ -632,29 +498,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                               <span className="text-[0.68rem] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1 mr-1">
                                 <Bookmark className="w-3 h-3 text-blue-600" /> Cited Slide(s):
                               </span>
-                              {alt.lecture_citations.map((rawCite, cIdx) => {
-                                const cite = resolveCitation(rawCite);
-                                return (
-                                  <button
-                                    key={cIdx}
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onOpenCitation(cite);
-                                    }}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-semibold bg-blue-100/80 hover:bg-blue-200 text-blue-800 border border-blue-200 transition cursor-pointer"
-                                    title={`Click to review ${cite.document} at page ${cite.page} in the in-app viewer`}
-                                  >
-                                    <ExternalLink className="w-2.5 h-2.5 text-blue-600 shrink-0" />
-                                    <span>{cite.label}</span>
-                                    {cite.title && (
-                                      <span className="opacity-70 font-normal max-w-[130px] truncate hidden sm:inline">
-                                        • {cite.title}
-                                      </span>
-                                    )}
-                                  </button>
-                                );
-                              })}
+                              {alt.lecture_citations.map((cite, cIdx) => (
+                                <CitationBadge
+                                  key={cIdx}
+                                  citation={cite}
+                                  onOpenCitation={onOpenCitation}
+                                />
+                              ))}
                             </div>
                           )}
                         </div>
@@ -676,29 +526,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                               <span className="text-[0.68rem] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1 mr-1">
                                 <BookOpen className="w-3 h-3 text-amber-600" /> Literature Source(s):
                               </span>
-                              {alt.literature_citations.map((rawCite, cIdx) => {
-                                const cite = resolveCitation(rawCite);
-                                return (
-                                  <button
-                                    key={cIdx}
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onOpenCitation(cite);
-                                    }}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-semibold bg-amber-100/80 hover:bg-amber-200 text-amber-900 border border-amber-200 transition cursor-pointer"
-                                    title={`Click to review ${cite.document} at page ${cite.page} in the in-app viewer`}
-                                  >
-                                    <ExternalLink className="w-2.5 h-2.5 text-amber-700 shrink-0" />
-                                    <span>{cite.label}</span>
-                                    {cite.section && (
-                                      <span className="opacity-70 font-normal max-w-[130px] truncate hidden sm:inline">
-                                        • {cite.section}
-                                      </span>
-                                    )}
-                                  </button>
-                                );
-                              })}
+                              {alt.literature_citations.map((cite, cIdx) => (
+                                <CitationBadge
+                                  key={cIdx}
+                                  citation={cite}
+                                  onOpenCitation={onOpenCitation}
+                                />
+                              ))}
                             </div>
                           )}
                         </div>
