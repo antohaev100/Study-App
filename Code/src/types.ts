@@ -1,7 +1,8 @@
 export interface Citation {
   id?: string;
+  task_id?: string;
   slide?: number;
-  type: 'lecture' | 'literature';
+  type: 'lecture' | 'literature' | 'lab';
   document?: string;
   page?: number;
   section?: string;
@@ -83,19 +84,50 @@ export interface LiteratureAdditionItem {
   citations?: Citation[];
 }
 
+export interface LabAdditionItem {
+  lab_id?: string;
+  task_id?: string;
+  lab_title?: string;
+  task_number?: string;
+  relevance_summary: string;
+  practical_guidance?: string;
+  code_or_commands?: string[];
+  common_pitfalls?: string;
+  citations?: Citation[];
+}
+
 export interface LectureSlideAddition {
   slide: number;
   title?: string;
   section?: string;
   literature_additions?: LiteratureAdditionItem[];
   questions?: RawQuestion[];
+  lab_additions?: LabAdditionItem[];
 }
 
 export interface LectureAdditionFile {
-  lecture_id: string;
-  document: string;
-  title: string;
+  lecture_id?: string;
+  document?: string;
+  title?: string;
   slides: LectureSlideAddition[];
+}
+
+export interface LabTaskEntry {
+  task_id?: string;
+  task: string;
+  title: string;
+  pages?: [number, number] | number[];
+  page?: number;
+}
+
+export interface LabIndexEntry {
+  id?: string;
+  lab_number?: string | number;
+  title: string;
+  description?: string;
+  tools?: string[];
+  total_pages?: number;
+  tasks?: LabTaskEntry[];
 }
 
 export type {

@@ -1,0 +1,77 @@
+{
+  "_comment": "Course Study App — Hands-on Labs & Assignments Index Template. If no lab manuals are used, output '{}'. Keys are bare PDF filenames located in data/labs/.",
+  "markdown_and_latex_support": {
+    "note": "ALL STRING FIELDS (title, description, tasks[].title, tasks[].description) SUPPORT FULL GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', and '$O(M \\times N)$'. Never write unescaped '\\t' or '\\f'. Escape literal dollar signs in prose as \\$.",
+    "code_and_math_rules": "Use backticks (`$var`) exclusively for code, shell syntax, packet headers, and script variables; use dollar signs ($math$) exclusively for LaTeX math (never nest backticks in math). Never output raw HTML/MathML tags like <span class='katex'> or <math>. Escape literal dollar signs in prose as \\$."
+  },
+  "_schema_field_definitions": {
+    "id": "String. Unique kebab-case identifier (e.g., 'lab-1-crypto', 'lab-2-snort', 'lab-ns2-simulation').",
+    "lab_number": "String or Integer. Lab identifier (e.g., '1', '2', 'Lab 1', 'Assignment A').",
+    "title": "MARKDOWN & LATEX STRING FIELD. Full canonical title of the lab assignment.",
+    "description": "MARKDOWN & LATEX STRING FIELD. Brief 1-2 sentence overview of what the lab covers, objectives, and systems evaluated.",
+    "tools": "Array of Strings (Optional). Primary tools, utilities, or libraries used (e.g. ['OpenSSL', 'Wireshark', 'GnuPG', 'Python']).",
+    "total_pages": "Integer. Total physical pages/sheets in the lab instruction PDF.",
+    "tasks": "Array of Task objects defining the exercises, milestones, and page bounds.",
+    "tasks[].task_id": "String. Unique kebab-case identifier for this specific task (e.g., 'task-1-1', 'task-1-2', 'task-ecb-modes'). Used for precise citation references when multiple tasks share a page.",
+    "tasks[].task": "String. Human-readable task number/label (e.g., 'Task 1', 'Task 1.2', 'Part A').",
+    "tasks[].title": "MARKDOWN & LATEX STRING FIELD. Descriptive title of this specific exercise.",
+    "tasks[].pages": "Array of 2 Integers: [start_page, end_page]. 1-indexed inclusive physical PDF page bounds."
+  },
+  "Lab1_Crypto_PKI.pdf": {
+    "id": "lab-1-crypto",
+    "lab_number": "1",
+    "title": "Lab 1: Cryptographic Primitives, PKI & OpenSSL",
+    "description": "Practical hands-on exploration of symmetric block ciphers, ECB pattern leakage, hash functions, and X.509 certificate validation using the OpenSSL CLI.",
+    "tools": ["OpenSSL", "Wireshark", "GnuPG"],
+    "total_pages": 8,
+    "tasks": [
+      {
+        "task_id": "task-1-1",
+        "task": "Task 1",
+        "title": "Symmetric Encryption & Block Cipher Modes (ECB vs. CBC)",
+        "pages": [2, 3]
+      },
+      {
+        "task_id": "task-1-2",
+        "task": "Task 2",
+        "title": "Cryptographic Hashes & Collision Resistance",
+        "pages": [4, 5]
+      },
+      {
+        "task_id": "task-1-3",
+        "task": "Task 3",
+        "title": "Public Key Infrastructure (PKI) & Digital Signatures",
+        "pages": [6, 8]
+      }
+    ]
+  },
+  "Lab2_Network_Security.pdf": {
+    "id": "lab-2-netsec",
+    "lab_number": "2",
+    "title": "Lab 2: Network Traffic Analysis & Intrusion Detection with Snort",
+    "description": "Capturing live packet traces, diagnosing TLS handshake exchanges, and authoring custom Snort IDS rules for anomaly detection.",
+    "tools": ["Snort", "tcpdump", "Wireshark"],
+    "total_pages": 12,
+    "tasks": [
+      {
+        "task_id": "task-2-1",
+        "task": "Task 1",
+        "title": "Packet Capture Analysis and TLS 1.3 Handshake Inspection",
+        "pages": [2, 5]
+      },
+      {
+        "task_id": "task-2-2",
+        "task": "Task 2",
+        "title": "Configuring Snort Network Intrusion Detection Rules",
+        "pages": [6, 9]
+      },
+      {
+        "task_id": "task-2-3",
+        "task": "Task 3",
+        "title": "Simulating Port Scans and Validating Alert Triggers",
+        "pages": [10, 12]
+      }
+    ]
+  }
+}

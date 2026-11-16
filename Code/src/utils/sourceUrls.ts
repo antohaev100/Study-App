@@ -14,14 +14,21 @@ const availableLectureFiles = new Set<string>(
 export function resolveSourceUrl(
   document?: string,
   page?: number,
-  type?: 'lecture' | 'literature',
+  type?: 'lecture' | 'literature' | 'lab',
   slide?: number
 ): string {
   if (!document) return '';
 
   const cleanDoc = document.trim();
 
-  // 1. Recommended Readings / Literature
+  // 1. Labs
+  if (type === 'lab' || cleanDoc.startsWith('labs/')) {
+    const fileName = cleanDoc.replace(/^labs\//i, '');
+    const pageHash = page && page > 0 ? `#page=${page}` : '';
+    return `labs/${fileName}${pageHash}`;
+  }
+
+  // 2. Recommended Readings / Literature
   if (
     type === 'literature' ||
     cleanDoc.startsWith('Recommended_Readings/') ||
@@ -33,7 +40,7 @@ export function resolveSourceUrl(
     return `RR/${fileName}${pageHash}`;
   }
 
-  // 2. Lectures
+  // 3. Lectures
   const bareName = cleanDoc.replace(/^lectures\//i, '');
 
   let targetFile = bareName;
@@ -56,7 +63,7 @@ export function resolveSourceUrl(
 export function cleanDocumentName(document?: string): string {
   if (!document) return '';
   return document
-    .replace(/^(Recommended_Readings|RR|lectures)\//i, '')
+    .replace(/^(Recommended_Readings|RR|lectures|labs)\//i, '')
     .replace(/\.pdf$/i, '')
     .replace(/_/g, ' ')
     .trim();

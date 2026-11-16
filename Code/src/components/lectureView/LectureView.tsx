@@ -22,6 +22,9 @@ import {
   Sparkles,
   Layers,
   ChevronDown,
+  Terminal,
+  FlaskConical,
+  AlertTriangle,
 } from 'lucide-react';
 
 // Load slide deck index
@@ -43,6 +46,7 @@ interface SlideMeta {
   section: string;
   hasLiterature: boolean;
   hasQuestions: boolean;
+  hasLabs: boolean;
 }
 
 export const LectureView: React.FC<LectureViewProps> = ({
@@ -53,27 +57,33 @@ export const LectureView: React.FC<LectureViewProps> = ({
   const availableDecks = useMemo(() => {
     const list: Array<{ id: string; document: string; title: string; totalSlides: number }> = [];
 
-    // Collect from lecture additions
-    rawLectureAdditions.forEach((add) => {
-      list.push({
-        id: add.lecture_id || add.document,
-        document: add.document,
-        title: add.title || add.document,
-        totalSlides: add.slides.reduce((max, s) => Math.max(max, s.slide), 1),
-      });
-    });
-
-    // Also check slides_index if other decks exist
+    // First collect all decks defined in slides_index.json (authoritative source)
     Object.entries(rawSlidesIndex).forEach(([key, val]: [string, any]) => {
       if (!key.startsWith('_') && !/^\d+$/.test(key) && val?.title) {
-        if (!list.some((d) => d.document.toLowerCase() === key.toLowerCase())) {
-          list.push({
-            id: val.id || key,
-            document: key,
-            title: val.title || key,
-            totalSlides: val.total_slides || val.pages || val.pageMap?.length || 1,
-          });
-        }
+        list.push({
+          id: val.id || key,
+          document: key,
+          title: val.title || key,
+          totalSlides: val.total_slides || val.pages || val.pageMap?.length || 1,
+        });
+      }
+    });
+
+    // Also incorporate any decks from additions files if not already in slides_index
+    rawLectureAdditions.forEach((add) => {
+      const doc = add.document || (add.lecture_id ? `${add.lecture_id}.pdf` : 'Lectures.pdf');
+      const existing = list.find(
+        (d) =>
+          d.document.toLowerCase() === doc.toLowerCase() ||
+          (add.lecture_id && d.id.toLowerCase() === add.lecture_id.toLowerCase())
+      );
+      if (!existing) {
+        list.push({
+          id: add.lecture_id || doc,
+          document: doc,
+          title: add.title || doc,
+          totalSlides: add.slides.reduce((max, s) => Math.max(max, s.slide), 1),
+        });
       }
     });
 
@@ -152,13 +162,14 @@ export const LectureView: React.FC<LectureViewProps> = ({
       const pm = pageMapLookup.get(s);
       const addition = slideAdditionsMap.get(s);
 
-      const title = addition?.title || pm?.title || `Slide ${s}`;
-      const section = addition?.section || pm?.section || 'Lecture Content';
+      const title = pm?.title || addition?.title || `Slide ${s}`;
+      const section = pm?.section || addition?.section || 'Lecture Content';
 
       const hasLiterature = !!(
         addition?.literature_additions && addition.literature_additions.length > 0
       );
       const hasQuestions = !!(addition?.questions && addition.questions.length > 0);
+      const hasLabs = !!(addition?.lab_additions && addition.lab_additions.length > 0);
 
       result.push({
         slide: s,
@@ -167,6 +178,7 @@ export const LectureView: React.FC<LectureViewProps> = ({
         section,
         hasLiterature,
         hasQuestions,
+        hasLabs,
       });
     }
     return result;
@@ -191,6 +203,7 @@ export const LectureView: React.FC<LectureViewProps> = ({
         section: 'General',
         hasLiterature: false,
         hasQuestions: false,
+        hasLabs: false,
       }
     );
   }, [allSlidesMeta, currentSlideNum]);
@@ -203,7 +216,7 @@ export const LectureView: React.FC<LectureViewProps> = ({
   const filteredSlides = useMemo(() => {
     let list = allSlidesMeta;
     if (onlyAdditionsFilter) {
-      list = list.filter((s) => s.hasLiterature || s.hasQuestions);
+      list = list.filter((s) => s.hasLiterature || s.hasQuestions || s.hasLabs);
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -219,7 +232,9 @@ export const LectureView: React.FC<LectureViewProps> = ({
 
   // Slides with additions list (for next/prev jump)
   const slidesWithAdditions = useMemo(() => {
-    return allSlidesMeta.filter((s) => s.hasLiterature || s.hasQuestions).map((s) => s.slide);
+    return allSlidesMeta
+      .filter((s) => s.hasLiterature || s.hasQuestions || s.hasLabs)
+      .map((s) => s.slide);
   }, [allSlidesMeta]);
 
   const handleNextAddition = () => {
@@ -458,7 +473,7 @@ export const LectureView: React.FC<LectureViewProps> = ({
                         {s.section}
                       </div>
 
-                      {/* Badges for Literature and Exam additions */}
+                      {/* Badges for Literature, Lab, and Exam additions */}
                       <div className="flex items-center gap-1.5 mt-1">
                         {s.hasLiterature && (
                           <span
@@ -467,6 +482,15 @@ export const LectureView: React.FC<LectureViewProps> = ({
                           >
                             <BookOpen className="w-2.5 h-2.5 text-amber-700" />
                             <span>Lit</span>
+                          </span>
+                        )}
+                        {s.hasLabs && (
+                          <span
+                            className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[0.62rem] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300"
+                            title="Contains hands-on lab exercise connection"
+                          >
+                            <Terminal className="w-2.5 h-2.5 text-emerald-700" />
+                            <span>Lab</span>
                           </span>
                         )}
                         {s.hasQuestions && (
@@ -547,6 +571,11 @@ export const LectureView: React.FC<LectureViewProps> = ({
                   {currentAddition.literature_additions.length} Reading Concept{currentAddition.literature_additions.length > 1 ? 's' : ''}
                 </span>
               )}
+              {currentAddition?.lab_additions && currentAddition.lab_additions.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 text-[0.68rem]">
+                  {currentAddition.lab_additions.length} Lab Connection{currentAddition.lab_additions.length > 1 ? 's' : ''}
+                </span>
+              )}
               {currentAddition?.questions && currentAddition.questions.length > 0 && (
                 <span className="px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-900 border border-purple-300 text-[0.68rem]">
                   {currentAddition.questions.length} Exam Q&amp;A{currentAddition.questions.length > 1 ? 's' : ''}
@@ -560,12 +589,13 @@ export const LectureView: React.FC<LectureViewProps> = ({
             {/* If no additions for this slide */}
             {(!currentAddition ||
               ((!currentAddition.literature_additions || currentAddition.literature_additions.length === 0) &&
-                (!currentAddition.questions || currentAddition.questions.length === 0))) && (
+                (!currentAddition.questions || currentAddition.questions.length === 0) &&
+                (!currentAddition.lab_additions || currentAddition.lab_additions.length === 0))) && (
               <div className="py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
                 <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                 <h3 className="text-sm font-bold text-slate-700">No Additions for Slide {currentSlideNum}</h3>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                  This slide does not currently have indexed supplementary reading concepts or past exam questions attached.
+                  This slide does not currently have indexed supplementary reading concepts, hands-on lab connections, or past exam questions attached.
                 </p>
                 {slidesWithAdditions.length > 0 && (
                   <button
@@ -627,7 +657,96 @@ export const LectureView: React.FC<LectureViewProps> = ({
               </div>
             )}
 
-            {/* SECTION 2: Related Past Exam Questions (Reusing TopicQuestionItem) */}
+            {/* SECTION 2: Hands-on Lab Connections & Practical Exercises */}
+            {currentAddition?.lab_additions && currentAddition.lab_additions.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between pb-1 border-b border-emerald-200">
+                  <div className="flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-emerald-700" />
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-emerald-900">
+                      Hands-on Lab Connections &amp; Practical Exercises
+                    </h3>
+                  </div>
+                  <span className="text-xs text-emerald-700 font-bold">
+                    {currentAddition.lab_additions.length} Connection{currentAddition.lab_additions.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {currentAddition.lab_additions.map((lab, lIdx) => (
+                    <div
+                      key={lIdx}
+                      className="bg-emerald-50/40 border border-emerald-200/80 rounded-xl p-3.5 space-y-2.5 shadow-2xs"
+                    >
+                      <div className="font-bold text-sm text-emerald-950 flex items-center justify-between flex-wrap gap-2">
+                        <span className="flex items-center gap-1.5">
+                          <span>{lab.lab_title || 'Lab Exercise'}</span>
+                          {(lab.task_number || lab.task_id) && (
+                            <span className="text-[0.68rem] text-emerald-800 font-semibold bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                              {lab.task_number || lab.task_id}
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-[0.65rem] font-mono text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">
+                          Lab Connection #{lIdx + 1}
+                        </span>
+                      </div>
+
+                      {lab.relevance_summary && (
+                        <div className="text-xs font-medium text-emerald-950 bg-emerald-100/70 p-2.5 rounded-lg leading-relaxed border border-emerald-200/60">
+                          <RichContent content={lab.relevance_summary} />
+                        </div>
+                      )}
+
+                      {lab.practical_guidance && (
+                        <div className="text-xs text-slate-800 leading-relaxed">
+                          <RichContent content={lab.practical_guidance} />
+                        </div>
+                      )}
+
+                      {lab.code_or_commands && lab.code_or_commands.length > 0 && (
+                        <div className="bg-slate-900 rounded-lg p-3 text-slate-100 font-mono text-xs overflow-x-auto space-y-1 shadow-inner">
+                          {lab.code_or_commands.map((cmd, cIdx) => (
+                            <div key={cIdx} className="flex items-start gap-2">
+                              <span className="text-emerald-400 select-none">$</span>
+                              <span className="select-all">{cmd}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {lab.common_pitfalls && (
+                        <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-950 flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                          <div className="leading-relaxed">
+                            <span className="font-bold">Watch out: </span>
+                            <RichContent content={lab.common_pitfalls} className="inline [&>p]:inline" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Lab Manual Citations */}
+                      {lab.citations && lab.citations.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-emerald-200/60">
+                          <span className="text-[0.65rem] font-bold text-emerald-800 uppercase tracking-wider mr-1">
+                            Lab Manual Citations:
+                          </span>
+                          {lab.citations.map((rawCite, cIdx) => (
+                            <CitationBadge
+                              key={cIdx}
+                              citation={rawCite}
+                              onOpenCitation={onOpenCitation}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SECTION 3: Related Past Exam Questions (Reusing TopicQuestionItem) */}
             {currentAddition?.questions && currentAddition.questions.length > 0 && (
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between pb-1 border-b border-purple-200">

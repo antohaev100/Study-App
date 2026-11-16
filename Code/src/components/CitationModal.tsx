@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Citation } from '../types';
-import { X, ExternalLink, ChevronLeft, ChevronRight, FileText, BookOpen } from 'lucide-react';
+import { X, ExternalLink, ChevronLeft, ChevronRight, FileText, BookOpen, Terminal } from 'lucide-react';
 import { resolveSourceUrl, cleanDocumentName } from '../utils/sourceUrls';
 import { resolveCitation } from '../utils/citationResolver';
 import { RichContent } from './RichContent';
@@ -27,6 +27,7 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
   const fullWindowUrl = resolveSourceUrl(resolved.document, currentPage, resolved.type, resolved.slide);
 
   const isLecture = resolved.type === 'lecture';
+  const isLab = resolved.type === 'lab';
   const docDisplayName = resolved.title || cleanDocumentName(resolved.document);
 
   const handlePrevPage = () => {
@@ -47,6 +48,8 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
           <div className="flex items-center gap-2.5 min-w-0">
             {isLecture ? (
               <FileText className="w-5 h-5 text-blue-400 shrink-0" />
+            ) : isLab ? (
+              <Terminal className="w-5 h-5 text-emerald-400 shrink-0" />
             ) : (
               <BookOpen className="w-5 h-5 text-amber-400 shrink-0" />
             )}
@@ -59,10 +62,12 @@ export const CitationModal: React.FC<CitationModalProps> = ({ citation, isOpen, 
                   className={`text-[0.68rem] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
                     isLecture
                       ? 'bg-blue-900 text-blue-200 border border-blue-700'
-                      : 'bg-amber-900 text-amber-200 border border-amber-700'
+                      : isLab
+                        ? 'bg-emerald-900 text-emerald-200 border border-emerald-700'
+                        : 'bg-amber-900 text-amber-200 border border-amber-700'
                   }`}
                 >
-                  {isLecture ? 'Lecture Slide' : 'Literature Source'}
+                  {isLecture ? 'Lecture Slide' : isLab ? 'Lab Manual' : 'Literature Source'}
                 </span>
               </div>
               <div className="text-xs text-slate-400 truncate flex items-center gap-2 mt-0.5">

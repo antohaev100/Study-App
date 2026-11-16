@@ -26,10 +26,12 @@ function getSourcesDirs(root: string) {
   const srcDataRR = path.resolve(root, 'src/data/RR');
   const srcDataExams = path.resolve(root, 'src/data/exams');
   const srcDataExamsClean = path.resolve(root, 'src/data/exams_clean');
+  const srcDataLabs = path.resolve(root, 'src/data/labs');
   const rootDataLectures = path.resolve(root, 'data/lectures');
   const rootDataRR = path.resolve(root, 'data/RR');
   const rootDataExams = path.resolve(root, 'data/exams');
   const rootDataExamsClean = path.resolve(root, 'data/exams_clean');
+  const rootDataLabs = path.resolve(root, 'data/labs');
 
   const lecturesDir = fs.existsSync(srcDataLectures)
     ? srcDataLectures
@@ -53,7 +55,13 @@ function getSourcesDirs(root: string) {
           ? rootDataExamsClean
           : null;
 
-  return { lecturesDir, rrDir, examsDir };
+  const labsDir = fs.existsSync(srcDataLabs)
+    ? srcDataLabs
+    : fs.existsSync(rootDataLabs)
+      ? rootDataLabs
+      : null;
+
+  return { lecturesDir, rrDir, examsDir, labsDir };
 }
 
 function sourcesPlugin(): Plugin {
@@ -65,7 +73,7 @@ function sourcesPlugin(): Plugin {
         if (!req.url) return next();
 
         const urlPath = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
-        const { lecturesDir, rrDir, examsDir } = getSourcesDirs(server.config.root);
+        const { lecturesDir, rrDir, examsDir, labsDir } = getSourcesDirs(server.config.root);
 
         // 1. Lecture routes: /lectures/*
         if (urlPath.startsWith('/lectures/') && lecturesDir) {
@@ -95,7 +103,19 @@ function sourcesPlugin(): Plugin {
           }
         }
 
-        // 3. Exams paper routes: /exams/* or legacy /exams_clean/*
+        // 3. Labs routes: /labs/*
+        if (urlPath.startsWith('/labs/') && labsDir) {
+          const fileName = urlPath.replace(/^\/labs\//, '');
+          const targetFile = path.join(labsDir, fileName);
+          if (fs.existsSync(targetFile) && fs.statSync(targetFile).isFile()) {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'inline');
+            fs.createReadStream(targetFile).pipe(res);
+            return;
+          }
+        }
+
+        // 4. Exams paper routes: /exams/* or legacy /exams_clean/*
         if ((urlPath.startsWith('/exams/') || urlPath.startsWith('/exams_clean/')) && examsDir) {
           const fileName = urlPath.replace(/^\/(exams|exams_clean)\//, '');
           const targetFile = path.join(examsDir, fileName);
@@ -142,11 +162,12 @@ function sourcesPlugin(): Plugin {
     closeBundle() {
       const root = process.cwd();
       const distDir = path.resolve(root, 'dist');
-      const { lecturesDir, rrDir, examsDir } = getSourcesDirs(root);
+      const { lecturesDir, rrDir, examsDir, labsDir } = getSourcesDirs(root);
 
       let lectureCount = 0;
       let rrCount = 0;
       let examsCount = 0;
+      let labsCount = 0;
 
       // Copy lectures once: src/data/lectures -> dist/lectures
       if (lecturesDir && fs.existsSync(lecturesDir)) {
@@ -162,6 +183,13 @@ function sourcesPlugin(): Plugin {
         rrCount = fs.readdirSync(destRR).filter((f) => f.toLowerCase().endsWith('.pdf')).length;
       }
 
+      // Copy labs once: src/data/labs -> dist/labs
+      if (labsDir && fs.existsSync(labsDir)) {
+        const destLabs = path.resolve(distDir, 'labs');
+        copyFolder(labsDir, destLabs);
+        labsCount = fs.readdirSync(destLabs).filter((f) => f.toLowerCase().endsWith('.pdf')).length;
+      }
+
       // Copy exams once: src/data/exams -> dist/exams
       if (examsDir && fs.existsSync(examsDir)) {
         const destExams = path.resolve(distDir, 'exams');
@@ -169,7 +197,7 @@ function sourcesPlugin(): Plugin {
         examsCount = fs.readdirSync(destExams).filter((f) => f.toLowerCase().endsWith('.pdf')).length;
       }
 
-      console.log(`[sources-plugin] Copied sources cleanly to dist: ${lectureCount} lecture(s) -> dist/lectures, ${rrCount} reading(s) -> dist/RR, ${examsCount} exam paper(s) -> dist/exams (0 duplicate files)`);
+      console.log(`[sources-plugin] Copied sources cleanly to dist: ${lectureCount} lecture(s) -> dist/lectures, ${rrCount} reading(s) -> dist/RR, ${labsCount} lab(s) -> dist/labs, ${examsCount} exam paper(s) -> dist/exams (0 duplicate files)`);
     },
   };
 }

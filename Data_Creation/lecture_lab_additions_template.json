@@ -1,0 +1,100 @@
+{
+  "$schema_description": "Course Study App — Production Lecture Lab Additions Template. Maps lecture slides to hands-on laboratory exercises, terminal commands, tool invocations, and practical debugging pitfalls across any course. Slide titles, sections, and deck metadata are defined centrally in slides_index.json and inherited automatically — do NOT repeat them here. All textual fields support full Markdown and LaTeX math ($inline$ or $$display$$ with double-escaped '\\\\'). The first slide entry below provides field-by-field instructions; subsequent entries show real examples.",
+  "_file_naming_and_placement": {
+    "recommended_path": "Code/src/data/lecture_additions/<lecture_prefix>_labs.json",
+    "examples": [
+      "Code/src/data/lecture_additions/L1_labs.json",
+      "Code/src/data/lecture_additions/L2_labs.json",
+      "Code/src/data/lecture_additions/01_intro_labs.json"
+    ],
+    "rule": "Use a consistent lecture prefix matching the literature and exam addition files for this lecture (e.g., 'L1_literature.json', 'L1_exams.json', and 'L1_labs.json' all sit inside 'Code/src/data/lecture_additions/')."
+  },
+  "markdown_and_latex_support": {
+    "note": "ALL TEXTUAL FIELDS SUPPORT FULL GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', and '$O(M \\times N)$'. Never write unescaped '\\t' or '\\f'. Escape literal dollar signs in prose as \\$.",
+    "code_and_math_rules": "Use backticks (`$var`) exclusively for code, shell syntax, packet headers, and script variables; use dollar signs ($math$) exclusively for LaTeX math (never nest backticks in math). Never output raw HTML/MathML tags like <span class='katex'> or <math>. Escape literal dollar signs in prose as \\$."
+  },
+  "lecture_id": "INSTRUCTION: Unique identifier string matching an 'id' from slides_index.json (e.g. 'lectures-module-1', 'l1-crypto-intro'). Deck title, document filename, and slide titles are resolved automatically from slides_index.json.",
+  "slides": [
+    {
+      "_comment": "SCHEMA & FIELD INSTRUCTIONS: Slide lab addition schema definition. Slide title and section are inherited automatically from slides_index.json.",
+      "slide": "INSTRUCTION: Integer (1-indexed physical sheet/slide number from slides_index.json) where these additions belong. Must be an integer >= 1.",
+      "lab_additions": [
+        {
+          "lab_id": "INSTRUCTION: Unique identifier matching an 'id' in labs_index.json (e.g., 'lab-1-crypto', 'lab-2-netsec').",
+          "task_id": "INSTRUCTION: Unique identifier matching a 'task_id' in labs_index.json (e.g., 'task-1-2', 'task-2-1'). Allows multiple distinct tasks sharing the same page to be cited and differentiated precisely.",
+          "lab_title": "MARKDOWN FIELD: Canonical title of the lab assignment (e.g., 'Lab 1: Cryptographic Primitives & PKI').",
+          "task_number": "INSTRUCTION: Human-readable task, step, or exercise identifier (e.g., 'Task 1.2', 'Exercise 3', 'Part B').",
+          "relevance_summary": "MARKDOWN FIELD: Concise 1-2 sentence explanation of how the theoretical concept on this slide directly applies to the lab exercise.",
+          "practical_guidance": "MARKDOWN FIELD: Detailed engineering walkthrough explaining what students perform in this lab: tools invoked, options configured, expected observations, and validation steps. Supports full Markdown (**bold**, `code`, bullet points) and LaTeX math ($...$).",
+          "code_or_commands": [
+            "INSTRUCTION: Array of exact shell commands, terminal invocations, script snippets, or tool configurations (e.g. 'openssl enc -aes-128-ecb ...', 'tcpdump -i eth0 -w trace.pcap')."
+          ],
+          "common_pitfalls": "MARKDOWN FIELD: Common student mistakes, subtle bugs, missing parameters, byte alignment gotchas, or environment errors to watch out for.",
+          "citations": [
+            {
+              "id": "INSTRUCTION: Identifier matching an 'id' in labs_index.json (e.g., 'lab-1-crypto').",
+              "task_id": "INSTRUCTION: Identifier matching a 'task_id' in labs_index.json (e.g., 'task-1-2'). The app automatically maps this task to its exact page in the lab manual PDF without needing a hardcoded page number.",
+              "type": "lab"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "EXAMPLE 1: CONCRETE SLIDE WITH CRYPTOGRAPHIC OPENSSL LAB ADDITION",
+      "slide": 18,
+      "lab_additions": [
+        {
+          "lab_id": "lab-1-crypto",
+          "task_id": "task-1-2",
+          "lab_title": "Lab 1: Cryptographic Primitives & PKI",
+          "task_number": "Task 1.2",
+          "relevance_summary": "Direct practical demonstration of ECB mode pattern leakage on structured data compared to CBC/CTR mode IV randomization.",
+          "practical_guidance": "In this exercise, you encrypt a 24-bit uncompressed bitmap image (`tux.bmp`) using AES in ECB mode versus CBC mode. Because ECB encrypts identical 128-bit plaintext blocks into identical ciphertext blocks, pixel patterns from the original image remain plainly visible in the encrypted output.",
+          "code_or_commands": [
+            "head -c 54 tux.bmp > header.bin",
+            "tail -c +55 tux.bmp > body.bin",
+            "openssl enc -aes-128-ecb -e -in body.bin -out ecb_body.bin -K 00112233445566778899aabbccddeeff",
+            "cat header.bin ecb_body.bin > tux_ecb.bmp"
+          ],
+          "common_pitfalls": "Encrypting the entire BMP file including its 54-byte header corrupts the image magic bytes (`BM`), causing image viewers to reject the file. You must preserve the unencrypted 54-byte BMP header to view the visual pattern leakage.",
+          "citations": [
+            {
+              "id": "lab-1-crypto",
+              "task_id": "task-1-2",
+              "type": "lab"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "EXAMPLE 2: CONCRETE SLIDE WITH PACKET CAPTURE / WIRESHARK LAB ADDITION",
+      "slide": 42,
+      "lab_additions": [
+        {
+          "lab_id": "lab-2-netsec",
+          "task_id": "task-2-1",
+          "lab_title": "Lab 2: Network Traffic Analysis & Intrusion Detection",
+          "task_number": "Task 2.1",
+          "relevance_summary": "Inspecting live Wireshark traces to identify the 1-RTT TLS 1.3 handshake sequence, `ClientHello` KeyShare extension, and server certificate encryption.",
+          "practical_guidance": "Students capture an HTTPS connection to a test server using `tshark` or `tcpdump`, export the session pre-master secrets via the `SSLKEYLOGFILE` environment variable, and observe how Wireshark transitions from plaintext `ClientHello`/`ServerHello` to encrypted records.",
+          "code_or_commands": [
+            "export SSLKEYLOGFILE=~/tls_keys.log",
+            "curl -v https://example.internal:8443",
+            "tshark -r trace.pcap -Y 'tls.handshake.type == 1' -T fields -e tls.handshake.extension.type"
+          ],
+          "common_pitfalls": "Confusing TLS 1.2 (where Server Certificate is transmitted in the clear) with TLS 1.3 (where Certificate and CertificateVerify are encrypted under the Server Handshake Traffic Secret).",
+          "citations": [
+            {
+              "id": "lab-2-netsec",
+              "task_id": "task-2-1",
+              "type": "lab"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

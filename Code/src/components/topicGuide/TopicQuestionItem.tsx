@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { QuestionEntry, Alternative, SubQuestion, Citation } from '../../types';
 import { RichContent } from '../RichContent';
 import { CitationBadge } from '../common/CitationBadge';
@@ -33,6 +33,19 @@ export const TopicQuestionItem: React.FC<TopicQuestionItemProps> = ({
   const [revealedStates, setRevealedStates] = useState<Record<number, boolean>>({});
   const [expandedDetails, setExpandedDetails] = useState<Record<number, boolean>>({});
   const [showAbbreviations, setShowAbbreviations] = useState(false);
+
+  // Shuffle multiple choice alternatives stably per question instance
+  const shuffledAlternatives = useMemo(() => {
+    if (!question.alternatives || question.alternatives.length <= 1) {
+      return question.alternatives || [];
+    }
+    const list = [...question.alternatives];
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  }, [question.id, question.alternatives]);
 
   const isWritten = question.type === 'written';
   const itemCount = isWritten
@@ -360,7 +373,7 @@ export const TopicQuestionItem: React.FC<TopicQuestionItemProps> = ({
             ) : (
               /* MULTIPLE CHOICE ALTERNATIVES LIST */
               <div className="space-y-2.5">
-                {question.alternatives.map((alt: Alternative, idx: number) => {
+                {shuffledAlternatives.map((alt: Alternative, idx: number) => {
                   const isRevealed = !!revealedStates[idx];
                   const letter = String.fromCharCode(65 + idx);
                   const isDetailExpanded = expandedDetails[idx] !== false;
@@ -376,7 +389,7 @@ export const TopicQuestionItem: React.FC<TopicQuestionItemProps> = ({
 
                   return (
                     <div
-                      key={idx}
+                      key={`${question.id}-alt-${idx}-${alt.text.slice(0, 15)}`}
                       className="border border-[#e0e0e0] rounded-md bg-white overflow-hidden shadow-2xs transition"
                     >
                       {/* Alternative Button */}

@@ -1,0 +1,208 @@
+{
+  "$schema_description": "Course Study App — Production Lecture Exam Additions Template. Defines past exam questions & verified model answers mapped to specific lecture slides across any course. Slide titles, sections, and deck metadata are defined centrally in slides_index.json and inherited automatically — do NOT repeat them here. All textual fields support full Markdown and LaTeX math ($inline$ or $$display$$ with double-escaped '\\\\'). The first slide entry below provides field-by-field instructions; subsequent entries show real examples.",
+  "_file_naming_and_placement": {
+    "recommended_path": "Code/src/data/lecture_additions/<lecture_prefix>_exams.json",
+    "examples": [
+      "Code/src/data/lecture_additions/L1_exams.json",
+      "Code/src/data/lecture_additions/L2_exams.json",
+      "Code/src/data/lecture_additions/01_intro_exams.json"
+    ],
+    "rule": "Use a consistent lecture prefix matching the literature and lab addition files for this lecture (e.g., 'L1_literature.json', 'L1_exams.json', and 'L1_labs.json' all sit inside 'Code/src/data/lecture_additions/')."
+  },
+  "markdown_and_latex_support": {
+    "note": "ALL TEXTUAL FIELDS SUPPORT FULL GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', and '$O(M \\times N)$'. Never write unescaped '\\t' or '\\f'. Escape literal dollar signs in prose as \\$.",
+    "code_and_math_rules": "Use backticks (`$var`) exclusively for code, shell syntax, packet headers, and script variables; use dollar signs ($math$) exclusively for LaTeX math (never nest backticks in math). Never output raw HTML/MathML tags like <span class='katex'> or <math>. Escape literal dollar signs in prose as \\$."
+  },
+  "lecture_id": "INSTRUCTION: Unique identifier string matching an 'id' from slides_index.json (e.g. 'lectures-module-1', 'l1-crypto-intro'). Deck title, document filename, and slide titles are resolved automatically from slides_index.json.",
+  "slides": [
+    {
+      "_comment": "SCHEMA & FIELD INSTRUCTIONS: Slide exam addition schema definition. Slide title and section are inherited automatically from slides_index.json.",
+      "slide": "INSTRUCTION: Integer (1-indexed physical sheet/slide number from slides_index.json) where these additions belong. Must be an integer >= 1.",
+      "questions": [
+        {
+          "_comment": "TEMPLATE 1A: RELATED MULTIPLE CHOICE QUESTION (Field instructions for multiple choice exam question answerable from this slide)",
+          "number": "INSTRUCTION: The question identifier string formatted as an exam-prefixed number (e.g., '240603-1', '250107-4') or plain sequence number (e.g., '1', '2').",
+          "exam": "INSTRUCTION: 6-digit exam date or identifier string (e.g., '240603', '250107').",
+          "topic": "INSTRUCTION: The unique topic ID string (e.g., 'topic-1-1', 'topic-paired-unpaired'). MUST match an existing topic 'id' from question_topics.json.",
+          "type": "multiple_choice",
+          "points": "INSTRUCTION: Positive number (integer or float, e.g., 2, 3, 1.5) representing the maximum points awarded for this question.",
+          "question": "MARKDOWN FIELD: The exact question prompt from the exam. Supports full GitHub-flavored Markdown and KaTeX math formulas ($...$ or $$...$$). Do not include alternatives inside this field; alternatives must be placed in the 'alternatives' array below.",
+          "alternatives": [
+            {
+              "text": "MARKDOWN FIELD: The exact text of the alternative option as presented in the exam. Supports full Markdown and KaTeX math ($...$).",
+              "is_correct": "INSTRUCTION: A strict boolean (true if the alternative statement is correct according to the exam key, false if it is incorrect). Do not use strings 'true' or 'false'.",
+              "lecture_explanation": "MARKDOWN FIELD: Technical explanation justifying WHY the statement is True or False. Supports **bold**, `code`, bullet points (- item), and KaTeX math ($...$ or $$...$$ with double-escaped '\\\\'). Explain technical mechanics, state machines, and boundaries directly without saying 'Slide X says'.",
+              "lecture_citations": [
+                {
+                  "id": "INSTRUCTION: Unique identifier string matching an 'id' from slides_index.json (e.g. 'lectures-module-1', 'l1-crypto-intro').",
+                  "slide": "INSTRUCTION: Integer (1-indexed physical sheet/slide number) corresponding to the cited slide in that lecture index.",
+                  "type": "lecture"
+                }
+              ],
+              "RR_addition": "MARKDOWN FIELD: Genuine non-repetitive supplementary engineering addition from Recommended Readings literature. Deepens systems depth (hardware trade-offs, historical drivers, empirical benchmarks) without repeating the lecture explanation.",
+              "literature_citations": [
+                {
+                  "id": "INSTRUCTION: Unique identifier string matching an 'id' from rr_index.json (e.g. 'rr-perf-eval', 'rr-aumasson2025-serious').",
+                  "slide": "INSTRUCTION: Integer (1-indexed physical sheet/page number) in that literature PDF where this addition is drawn from.",
+                  "type": "literature"
+                }
+              ]
+            }
+          ],
+          "abbreviations": [
+            {
+              "abbreviation": "INSTRUCTION: Technical acronym or initialism used anywhere in this question entry (e.g. 'ANOVA', 'AES', 'BGP').",
+              "phrase": "INSTRUCTION: Full expanded phrase with concise parenthetical role (e.g. 'Analysis of Variance (statistical technique for comparing means across multiple groups)').",
+              "pronunciation": "INSTRUCTION: Intuitive phonetic pronunciation using hyphenated syllables and capitalized stressed syllables (e.g. 'uh-NO-vuh')."
+            }
+          ]
+        },
+        {
+          "_comment": "TEMPLATE 1B: RELATED WRITTEN QUESTION (Field instructions for written open-response or multi-part question answerable from this slide)",
+          "number": "INSTRUCTION: The question identifier string formatted as an exam-prefixed number (e.g., '240603-2', '250107-5') or plain sequence number.",
+          "exam": "INSTRUCTION: 6-digit exam date or identifier string (e.g., '240603', '250107').",
+          "topic": "INSTRUCTION: The unique topic ID string (e.g., 'topic-2-1', 'topic-sim-validation'). MUST match an existing topic 'id' from question_topics.json.",
+          "type": "written",
+          "points": "INSTRUCTION: Positive number (integer or float, e.g., 4, 6, 2.5) representing the total points for the entire written question entry.",
+          "context": "MARKDOWN FIELD: Shared scenario, diagram description, or background preamble applying to the subquestions below. Supports full Markdown and KaTeX math ($...$ or $$...$$). Leave as an empty string '' if there is no shared preamble.",
+          "sub_questions": [
+            {
+              "label": "INSTRUCTION: Subquestion identifier string (e.g., 'a', 'b', 'c', 'i', 'ii'). Leave as an empty string '' if a single standalone question.",
+              "points": "INSTRUCTION: Positive number (integer or float, e.g., 2, 1.5) for this specific subquestion, OR null if points are not separately partitioned.",
+              "question": "MARKDOWN FIELD: The exact prompt for this subquestion (or main prompt if single question). Supports Markdown and KaTeX math.",
+              "lecture_explanation": "MARKDOWN FIELD: Comprehensive model answer addressing this subquestion. Supports **bold**, `code`, bullet points, and KaTeX math ($...$ or $$...$$ with double-escaped '\\\\').",
+              "lecture_citations": [
+                {
+                  "id": "INSTRUCTION: Unique identifier string matching an 'id' from slides_index.json.",
+                  "slide": "INSTRUCTION: Integer (1-indexed physical sheet/slide number) corresponding to the cited slide.",
+                  "type": "lecture"
+                }
+              ],
+              "RR_addition": "MARKDOWN FIELD: Genuine non-repetitive supplementary engineering addition from Recommended Readings literature. Deepens systems depth without repeating the lecture explanation.",
+              "literature_citations": [
+                {
+                  "id": "INSTRUCTION: Unique identifier string matching an 'id' from rr_index.json.",
+                  "slide": "INSTRUCTION: Integer (1-indexed physical sheet/page number) in that literature PDF.",
+                  "type": "literature"
+                }
+              ]
+            }
+          ],
+          "abbreviations": [
+            {
+              "abbreviation": "INSTRUCTION: Technical acronym or initialism used in this question.",
+              "phrase": "INSTRUCTION: Full expanded phrase with concise parenthetical role.",
+              "pronunciation": "INSTRUCTION: Intuitive phonetic pronunciation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "EXAMPLE 1: CONCRETE SLIDE WITH RELATED MULTIPLE CHOICE EXAM QUESTION",
+      "slide": 2,
+      "questions": [
+        {
+          "number": "240603-1",
+          "exam": "240603",
+          "topic": "topic-1-1",
+          "type": "multiple_choice",
+          "points": 2,
+          "question": "Consider evaluating two alternative cache replacement policies (Policy A vs. Policy B) under identical benchmark workloads. Which of the following statements regarding paired observations is correct?",
+          "alternatives": [
+            {
+              "text": "Paired observations eliminate workload-induced variance by computing differences $D_i = A_i - B_i$ across identical benchmark workloads.",
+              "is_correct": true,
+              "lecture_explanation": "When both alternatives are subjected to identical workloads $W_i$, pairing tests the differences $D_i = A_i - B_i$. This cancels out the variance introduced by fluctuations in workload complexity, narrowing the confidence interval compared to an unpaired $t$-test.",
+              "lecture_citations": [
+                {
+                  "id": "lectures-dvad27",
+                  "slide": 2,
+                  "type": "lecture"
+                }
+              ],
+              "RR_addition": "Jain (Section 13.2) emphasizes that pairing isolates the treatment effect from environmental heterogeneity, reducing sample requirements by up to $5\\times$.",
+              "literature_citations": [
+                {
+                  "id": "rr-perf-eval",
+                  "slide": 26,
+                  "type": "literature"
+                }
+              ]
+            },
+            {
+              "text": "An unpaired two-sample $t$-test is always statistically superior because it provides more degrees of freedom ($2n - 2$ vs. $n - 1$).",
+              "is_correct": false,
+              "lecture_explanation": "Although an unpaired test has $2n - 2$ degrees of freedom compared to $n - 1$ for a paired test, this slight gain in degrees of freedom is vastly outweighed by the massive increase in sample variance if between-workload variance is large.",
+              "lecture_citations": [
+                {
+                  "id": "lectures-dvad27",
+                  "slide": 2,
+                  "type": "lecture"
+                }
+              ]
+            }
+          ],
+          "abbreviations": [
+            {
+              "abbreviation": "ANOVA",
+              "phrase": "Analysis of Variance (statistical technique for comparing means)",
+              "pronunciation": "uh-NO-vuh"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "EXAMPLE 2: CONCRETE SLIDE WITH RELATED WRITTEN EXAM QUESTION",
+      "slide": 4,
+      "questions": [
+        {
+          "number": "250107-3",
+          "exam": "250107",
+          "topic": "topic-2-1",
+          "type": "written",
+          "points": 4,
+          "context": "A network simulation model was developed in NS-2 to analyze end-to-end packet delay across a congested router bottleneck.",
+          "sub_questions": [
+            {
+              "label": "a",
+              "points": 2,
+              "question": "Explain the difference between model verification and model validation in simulation study methodology.",
+              "lecture_explanation": "**Model Verification** ensures the conceptual simulation model is correctly implemented in software/code (debugging: 'building the model right'). **Model Validation** ensures the simulation model accurately reflects the physical real-world system behavior (fidelity: 'building the right model').",
+              "lecture_citations": [
+                {
+                  "id": "lectures-dvad27",
+                  "slide": 4,
+                  "type": "lecture"
+                }
+              ],
+              "RR_addition": "According to Banks et al. (Chapter 10), validation requires face validation, input-output transformation testing, and comparison against historical physical traces using calibration metrics like Theil's inequality coefficient.",
+              "literature_citations": [
+                {
+                  "id": "rr-perf-eval",
+                  "slide": 45,
+                  "type": "literature"
+                }
+              ]
+            },
+            {
+              "label": "b",
+              "points": 2,
+              "question": "State two empirical techniques used to detect the end of the transient warmup phase in discrete-event simulation output.",
+              "lecture_explanation": "1. **Welch's Moving Average Procedure**: Averaging across multiple independent replications and plotting moving averages over window $w$ to visually locate the point where the metric curve flattens.\n2. **Batch Means Heuristic**: Discarding initial deletion period $d$ until autocorrelation between successive batch means drops below threshold $\\rho < 0.05$.",
+              "lecture_citations": [
+                {
+                  "id": "lectures-dvad27",
+                  "slide": 4,
+                  "type": "lecture"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { X, BookOpen, FileText, GraduationCap, ArrowUpRight } from 'lucide-react';
+import { X, BookOpen, FileText, GraduationCap, ArrowUpRight, Terminal } from 'lucide-react';
 import { Citation } from '../types';
 import { resolveSourceUrl } from '../utils/sourceUrls';
-import { OutlineNode } from '../utils/citationResolver';
+import { OutlineNode, rawLabsIndex } from '../utils/citationResolver';
 import { RichContent } from './RichContent';
 
 interface SourcesLibraryModalProps {
@@ -228,6 +228,37 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
       });
   }, []);
 
+  const labs = useMemo(() => {
+    const labsRecord = (rawLabsIndex || {}) as Record<string, any>;
+    return Object.entries(labsRecord)
+      .filter(
+        ([key]) =>
+          !key.startsWith('_') &&
+          !key.startsWith('$') &&
+          key !== 'markdown_and_latex_support'
+      )
+      .map(([fileName, data]) => {
+        const cleanTitle = data.title || fileName.replace(/\.pdf$/i, '').replace(/_/g, ' ');
+        const docPath = fileName.startsWith('labs/') || fileName.includes('/') ? fileName : `labs/${fileName}`;
+        const toolsList: string[] = Array.isArray(data.tools) ? data.tools : [];
+        const taskNames: string[] = [];
+        if (Array.isArray(data.tasks)) {
+          for (const t of data.tasks) {
+            if (t.title) taskNames.push(t.task ? `${t.task}: ${t.title}` : t.title);
+          }
+        }
+        return {
+          title: cleanTitle,
+          labNumber: data.lab_number ? `Lab ${data.lab_number}` : 'Lab Assignment',
+          document: docPath,
+          description: data.description || (taskNames.length > 0 ? `Tasks: ${taskNames.join(' • ')}` : 'Practical lab assignment manual'),
+          tools: toolsList,
+          page: 1,
+          type: 'lab' as const,
+        };
+      });
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-5">
       <div className="bg-white rounded-xl shadow-2xl flex flex-col w-full max-w-4xl max-h-[90vh] border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -291,6 +322,79 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
                           });
                         }}
                         className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[0.72rem] font-semibold transition cursor-pointer"
+                      >
+                        View in App
+                      </button>
+                      <a
+                        href={resolveSourceUrl(item.document, item.page, item.type)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[0.72rem] text-slate-500 hover:text-slate-800 font-medium px-2 py-1 rounded hover:bg-slate-100 transition"
+                      >
+                        <ArrowUpRight className="w-3 h-3" />
+                        <span>New Tab</span>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Hands-on Labs & Assignments Section */}
+          <div>
+            <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-700 mb-3 pb-1 border-b border-emerald-100">
+              <Terminal className="w-4 h-4 text-emerald-600" />
+              <span>Hands-on Labs &amp; Assignments</span>
+            </div>
+            {labs.length === 0 ? (
+              <div className="p-4 rounded-lg border border-dashed border-slate-200 text-center text-xs text-slate-500 bg-slate-50">
+                No laboratory manuals are configured in labs_index.json (or lab_index.json) for this course.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {labs.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/20 transition flex flex-col justify-between group"
+                  >
+                    <div>
+                      <div className="text-[0.7rem] font-bold text-emerald-800 mb-0.5">
+                        {item.labNumber}
+                      </div>
+                      <h3 className="font-semibold text-xs text-slate-900 group-hover:text-emerald-800 mb-1 flex items-start justify-between gap-2">
+                        <RichContent content={item.title} className="text-xs font-semibold text-slate-900 group-hover:text-emerald-800 [&>p]:inline" />
+                        <Terminal className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      </h3>
+                      <div className="text-[0.75rem] text-slate-600 leading-relaxed mb-2.5">
+                        <RichContent content={item.description} className="text-[0.75rem] text-slate-600 leading-relaxed [&>p]:m-0" />
+                      </div>
+                      {item.tools && item.tools.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 mb-3">
+                          {item.tools.map((t, tIdx) => (
+                            <span
+                              key={tIdx}
+                              className="text-[0.62rem] font-mono px-1.5 py-0.2 bg-emerald-100 text-emerald-900 rounded font-semibold"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                      <button
+                        onClick={() => {
+                          onClose();
+                          onOpenCitation({
+                            document: item.document,
+                            page: item.page,
+                            label: item.title,
+                            title: item.title,
+                            type: item.type,
+                          });
+                        }}
+                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[0.72rem] font-semibold transition cursor-pointer"
                       >
                         View in App
                       </button>

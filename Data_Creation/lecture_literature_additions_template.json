@@ -1,0 +1,71 @@
+{
+  "$schema_description": "Course Study App — Production Lecture Literature Additions Template. Defines Recommended Readings supplementary concepts, mathematical proofs, and systems insights mapped to lecture slides across any course. Slide titles, sections, and deck metadata are defined centrally in slides_index.json and inherited automatically — do NOT repeat them here. All textual fields support full Markdown and LaTeX math ($inline$ or $$display$$ with double-escaped '\\\\'). The first slide entry below provides field-by-field instructions; subsequent entries show real examples.",
+  "_file_naming_and_placement": {
+    "recommended_path": "Code/src/data/lecture_additions/<lecture_prefix>_literature.json",
+    "examples": [
+      "Code/src/data/lecture_additions/L1_literature.json",
+      "Code/src/data/lecture_additions/L2_literature.json",
+      "Code/src/data/lecture_additions/01_intro_literature.json"
+    ],
+    "rule": "Use a consistent lecture prefix matching the exam and lab addition files for this lecture (e.g., 'L1_literature.json', 'L1_exams.json', and 'L1_labs.json' all sit inside 'Code/src/data/lecture_additions/')."
+  },
+  "markdown_and_latex_support": {
+    "note": "ALL TEXTUAL FIELDS SUPPORT FULL GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is the JSON escape character. Every LaTeX command MUST use double backslashes '\\\\'. For example, write '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', and '$O(M \\times N)$'. Never write unescaped '\\t' or '\\f'. Escape literal dollar signs in prose as \\$.",
+    "code_and_math_rules": "Use backticks (`$var`) exclusively for code, shell syntax, packet headers, and script variables; use dollar signs ($math$) exclusively for LaTeX math (never nest backticks in math). Never output raw HTML/MathML tags like <span class='katex'> or <math>. Escape literal dollar signs in prose as \\$."
+  },
+  "lecture_id": "INSTRUCTION: Unique identifier string matching an 'id' from slides_index.json (e.g. 'lectures-module-1', 'lectures-net-arch', 'l1-crypto-intro'). Deck title, document filename, and slide titles are resolved automatically from slides_index.json.",
+  "slides": [
+    {
+      "_comment": "SCHEMA & FIELD INSTRUCTIONS: Slide literature addition schema definition. Slide title and section are inherited automatically from slides_index.json.",
+      "slide": "INSTRUCTION: Integer (1-indexed physical sheet/slide number from slides_index.json) where these additions belong. Must be an integer >= 1.",
+      "literature_additions": [
+        {
+          "concept": "MARKDOWN FIELD: A concise, impactful concept title describing the supplementary topic from the Recommended Readings literature (e.g. 'Paired vs. Unpaired Experimental Design & Variance Reduction', 'Reductionist Security Proofs vs. Side-Channel Leakage').",
+          "content": "MARKDOWN FIELD: Rigorous supplementary systems/engineering knowledge drawn from the Recommended Readings research papers or textbooks that expands upon this slide's content. SUPPORT RULES: Full Markdown (**bold**, `code`, bullet points - item) and KaTeX math ($inline$ or $$display$$ with double-escaped '\\\\'). CONTENT RULES: 1. Explain underlying mechanisms (mathematical proofs, algorithmic complexity, hardware tradeoffs, state machines, protocol boundaries). 2. Provide empirical findings or real-world measurements documented in the literature. 3. STRICT PROHIBITION: Never say 'The paper says' or cite raw file names; state the technical facts directly.",
+          "citations": [
+            {
+              "id": "INSTRUCTION: Unique identifier string matching an 'id' from rr_index.json (e.g. 'rr-perf-eval', 'rr-aumasson2025-serious').",
+              "slide": "INSTRUCTION: Integer (1-indexed physical sheet/page number) in that literature PDF where this addition is drawn from.",
+              "type": "literature"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "EXAMPLE 1: CONCRETE SLIDE WITH LITERATURE ADDITIONS",
+      "slide": 2,
+      "literature_additions": [
+        {
+          "concept": "Paired vs. Unpaired Experimental Design & Variance Reduction",
+          "content": "In experimental systems evaluation, choosing between **paired** and **unpaired** observation models directly impacts statistical variance:\n\n1. **Paired Observations**: Both alternatives are evaluated under identical benchmark workloads or identical test conditions (e.g. executing workload $W_i$ on both Alternative A and Alternative B). By subtracting pairwise $D_i = A_i - B_i$, workload-induced variance is mathematically eliminated, drastically narrowing the confidence interval.\n2. **Unpaired Observations**: Trials are executed independently with non-corresponding inputs. This requires a two-sample $t$-test with pooled or Welch-Satterthwaite degrees of freedom, which inherently exhibits higher variance.\n\nFailing to pair when matching workloads are available inflates the required sample size by up to a factor of $2\\times$ to $5\\times$ for the same confidence level.",
+          "citations": [
+            {
+              "id": "rr-perf-eval",
+              "slide": 26,
+              "type": "literature"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "EXAMPLE 2: CONCRETE SLIDE WITH MULTIPLE CITATIONS AND DISPLAY MATH",
+      "slide": 4,
+      "literature_additions": [
+        {
+          "concept": "Reductionist Security Proofs vs. Real-World Attack Surfaces",
+          "content": "From the cryptographer's perspective, security is established mathematically by proving that breaking a construction $\\Pi$ with advantage $\\epsilon$ in time $t$ implies an algorithm solving an underlying hard mathematical problem (e.g., discrete logarithms in cyclic group $\\mathbb{G}$, or factoring $N = pq$) with comparable resources:\n\n$$\\mathbf{Adv}_{\\Pi}(A) \\le \\mathbf{Adv}_{\\text{HardProblem}}(B) + \\text{negl}(\\lambda)$$\n\nHowever, in physical system implementations, adversaries bypass the mathematical reduction entirely via side-channel analysis (cache timing, power differentials, branch predictors) or operational API misuse. A cipher can be mathematically unassailable under standard complexity models yet completely broken in deployment if intermediate state operations take variable clock cycles.",
+          "citations": [
+            {
+              "id": "rr-aumasson2025-serious",
+              "slide": 12,
+              "type": "literature"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

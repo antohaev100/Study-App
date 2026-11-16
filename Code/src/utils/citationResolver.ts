@@ -40,28 +40,35 @@ export interface ResolvedCitation extends Citation {
   section?: string;
   label: string;
   title?: string;
-  type: 'lecture' | 'literature';
+  type: 'lecture' | 'literature' | 'lab';
   url: string;
 }
 
-// Load slide and RR indexes from data folder
+// Load slide, RR, and Labs indexes from data folder
 const slideModules = import.meta.glob<{ default: Record<string, DocumentIndexEntry> }>(
   '../data/slides_index.json',
   { eager: true }
 );
-const rawSlidesIndex = Object.values(slideModules)[0]?.default || {};
+export const rawSlidesIndex: Record<string, any> = Object.values(slideModules)[0]?.default || {};
 
 const rrModules = import.meta.glob<{ default: Record<string, DocumentIndexEntry> }>(
   '../data/rr_index.json',
   { eager: true }
 );
-const rawRrIndex = Object.values(rrModules)[0]?.default || {};
+export const rawRrIndex: Record<string, any> = Object.values(rrModules)[0]?.default || {};
+
+const labModules = import.meta.glob<{ default: Record<string, any> }>(
+  ['../data/labs_index.json', '../data/lab_index.json'],
+  { eager: true }
+);
+export const rawLabsIndex = Object.values(labModules)[0]?.default || {};
 
 // Helpers to build fast lookups
 interface DocLookup {
   filename: string;
   doc: DocumentIndexEntry;
   slidesMap: Map<number, PageMapEntry>;
+  tasksMap?: Map<string, any>;
 }
 
 function buildIndexLookups(rawIndex: Record<string, DocumentIndexEntry>) {
@@ -81,6 +88,7 @@ function buildIndexLookups(rawIndex: Record<string, DocumentIndexEntry>) {
     // Modern index format where key is the bare filename
     const filename = key;
     const slidesMap = new Map<number, PageMapEntry>();
+    const tasksMap = new Map<string, any>();
 
     if (Array.isArray(val.pageMap)) {
       for (const pm of val.pageMap) {
@@ -97,7 +105,33 @@ function buildIndexLookups(rawIndex: Record<string, DocumentIndexEntry>) {
       }
     }
 
-    const lookup: DocLookup = { filename, doc: val, slidesMap };
+    // Support labs_index task ranges and task_id
+    if (Array.isArray((val as any).tasks)) {
+      for (const t of (val as any).tasks) {
+        if (t.task_id) {
+          tasksMap.set(String(t.task_id).toLowerCase().trim(), t);
+        }
+        if (Array.isArray(t.pages) && t.pages.length >= 2) {
+          for (let p = t.pages[0]; p <= t.pages[1]; p++) {
+            slidesMap.set(p, {
+              slide: p,
+              page: p,
+              title: t.title,
+              section: t.task,
+            });
+          }
+        } else if (typeof t.page === 'number') {
+          slidesMap.set(t.page, {
+            slide: t.page,
+            page: t.page,
+            title: t.title,
+            section: t.task,
+          });
+        }
+      }
+    }
+
+    const lookup: DocLookup = { filename, doc: val, slidesMap, tasksMap };
 
     if (val.id) {
       byId.set(val.id.toLowerCase().trim(), lookup);
@@ -105,7 +139,7 @@ function buildIndexLookups(rawIndex: Record<string, DocumentIndexEntry>) {
     byFilename.set(filename.toLowerCase().trim(), lookup);
 
     // Also strip extensions and folder prefixes for relaxed matching
-    const cleanKey = filename.replace(/^(Recommended_Readings|RR|lectures)\//i, '').replace(/\.pdf$/i, '').toLowerCase().trim();
+    const cleanKey = filename.replace(/^(Recommended_Readings|RR|lectures|labs)\//i, '').replace(/\.pdf$/i, '').toLowerCase().trim();
     if (!byFilename.has(cleanKey)) {
       byFilename.set(cleanKey, lookup);
     }
@@ -116,6 +150,7 @@ function buildIndexLookups(rawIndex: Record<string, DocumentIndexEntry>) {
 
 const slidesIndex = buildIndexLookups(rawSlidesIndex);
 const rrIndex = buildIndexLookups(rawRrIndex);
+const labsIndex = buildIndexLookups(rawLabsIndex);
 
 interface OutlineMatch {
   title: string;
@@ -169,8 +204,8 @@ function findOutlineMatch(
  */
 export function resolveCitation(cite: Citation): ResolvedCitation {
   const type = cite.type || 'lecture';
-  const lookups = type === 'lecture' ? slidesIndex : rrIndex;
-  const fallbackLookups = type === 'lecture' ? rrIndex : slidesIndex;
+  const lookups = type === 'lecture' ? slidesIndex : type === 'lab' ? labsIndex : rrIndex;
+  const fallbackLookups = type === 'lecture' ? rrIndex : type === 'lab' ? slidesIndex : slidesIndex;
 
   let matchedLookup: DocLookup | undefined;
 
@@ -184,7 +219,7 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
   if (!matchedLookup && cite.document) {
     const docKey = cite.document.toLowerCase().trim();
     const cleanKey = cite.document
-      .replace(/^(Recommended_Readings|RR|lectures)\//i, '')
+      .replace(/^(Recommended_Readings|RR|lectures|labs)\//i, '')
       .replace(/\.pdf$/i, '')
       .toLowerCase()
       .trim();
@@ -195,29 +230,58 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
       fallbackLookups.byFilename.get(cleanKey);
   }
 
+  // 3. Fallback: if lab citation with task_id and no matchedLookup yet, search across lab lookups
+  if (!matchedLookup && cite.task_id) {
+    const taskKey = cite.task_id.toLowerCase().trim();
+    for (const lookup of lookups.byId.values()) {
+      if (lookup.tasksMap?.has(taskKey)) {
+        matchedLookup = lookup;
+        break;
+      }
+    }
+  }
+
   // Check legacy slide map if no document found but slide number is present for lectures
   let legacyEntry: DocumentIndexEntry | undefined;
   if (!matchedLookup && type === 'lecture' && typeof cite.slide === 'number') {
     legacyEntry = slidesIndex.legacySlides.get(cite.slide);
   }
 
-  const slideNum = cite.slide ?? legacyEntry?.slide ?? cite.page ?? 1;
+  // Check task matching for labs
+  let matchedTask: any = undefined;
+  if (cite.task_id && matchedLookup?.tasksMap) {
+    matchedTask = matchedLookup.tasksMap.get(cite.task_id.toLowerCase().trim());
+  }
+
+  let taskStartPage: number | undefined;
+  if (matchedTask) {
+    if (Array.isArray(matchedTask.pages) && matchedTask.pages.length > 0) {
+      taskStartPage = matchedTask.pages[0];
+    } else if (typeof matchedTask.page === 'number') {
+      taskStartPage = matchedTask.page;
+    }
+  }
+
+  const slideNum = cite.slide ?? taskStartPage ?? legacyEntry?.slide ?? cite.page ?? 1;
   const pageMapEntry = matchedLookup?.slidesMap.get(slideNum);
   const outlineMatch = !pageMapEntry ? findOutlineMatch(matchedLookup?.doc.outline, slideNum) : null;
 
   // Determine physical page for viewer URL navigation (always slideNum in PDF)
   const resolvedPage = slideNum;
-  const displayPage = pageMapEntry?.page ?? cite.page ?? slideNum;
+  const displayPage = matchedTask
+    ? (taskStartPage ?? pageMapEntry?.page ?? cite.page ?? slideNum)
+    : (pageMapEntry?.page ?? cite.page ?? slideNum);
 
   const resolvedDoc =
     matchedLookup?.filename ||
     cite.document ||
     legacyEntry?.document ||
-    (type === 'lecture' ? 'Lectures.pdf' : '');
+    (type === 'lecture' ? 'Lectures.pdf' : type === 'lab' ? 'Lab.pdf' : '');
 
   const docTitle = matchedLookup?.doc.title || '';
   const resolvedTitle =
     cite.title ||
+    matchedTask?.title ||
     pageMapEntry?.title ||
     outlineMatch?.title ||
     legacyEntry?.title ||
@@ -226,6 +290,8 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
 
   const resolvedSection =
     cite.section ||
+    matchedTask?.task ||
+    matchedTask?.task_id ||
     pageMapEntry?.section ||
     outlineMatch?.section ||
     (outlineMatch && docTitle && outlineMatch.title !== docTitle ? docTitle : '') ||
@@ -237,6 +303,13 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
   if (!resolvedLabel) {
     if (type === 'lecture') {
       resolvedLabel = `Slide ${slideNum}`;
+    } else if (type === 'lab') {
+      const labNum = (matchedLookup?.doc as any)?.lab_number;
+      const labPrefix = labNum ? `Lab ${labNum}` : docTitle || 'Lab';
+      const taskStr = matchedTask
+        ? (matchedTask.task || matchedTask.task_id)
+        : (resolvedSection || (displayPage ? `p. ${displayPage}` : `Page ${resolvedPage}`));
+      resolvedLabel = `${labPrefix} (${taskStr})`;
     } else {
       const authorOrTitle = matchedLookup?.doc.author || docTitle || resolvedDoc.replace(/\.pdf$/i, '');
       const shortAuthor = authorOrTitle.split(',')[0].replace(/\(.*?\)/g, '').trim();

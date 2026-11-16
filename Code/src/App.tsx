@@ -238,6 +238,8 @@ export default function App() {
     setBrowseIndex((prev) => (prev - 1 + entries.length) % entries.length);
   }, [entries.length]);
 
+  const [rerollCount, setRerollCount] = useState(0);
+
   const handleReroll = useCallback(() => {
     if (entries.length === 0) return;
     const newOrder = shuffleArray(entries.length);
@@ -245,6 +247,7 @@ export default function App() {
     setCurrentIndex(0);
     setQElapsed(0);
     setRevealedStates({});
+    setRerollCount((c) => c + 1);
   }, [entries.length]);
 
   const handleResetBreak = useCallback(() => {
@@ -471,6 +474,7 @@ export default function App() {
           >
             {currentQuestion ? (
               <QuestionCard
+                key={`${currentQuestion.id}-${rerollCount}`}
                 scrollRef={practiceScrollRef}
                 question={currentQuestion}
                 revealedStates={revealedStates}

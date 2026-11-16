@@ -1,4 +1,4 @@
-import { QuestionEntry, RawQuestion } from '../types';
+import { QuestionEntry, RawQuestion, Alternative } from '../types';
 import { resolveCitation } from './citationResolver';
 
 /**
@@ -46,10 +46,12 @@ export function normalizeQuestionEntry(
  */
 export function formatQuestionForClipboard(
   q: RawQuestion | QuestionEntry,
-  idx: number = 0
+  idx: number = 0,
+  alternativesOverride?: Alternative[]
 ): string {
   const item = normalizeQuestionEntry(q, idx);
   const sections: string[] = [];
+  const altsToUse = alternativesOverride || item.alternatives;
 
   let headerText = `### Exam ${item.exam} — Question ${item.number}`;
   if (typeof item.points === 'number' && !isNaN(item.points)) {
@@ -106,9 +108,9 @@ export function formatQuestionForClipboard(
       subLines.push(entryParts.join('\n'));
     });
     sections.push(subLines.join('\n\n'));
-  } else if (item.alternatives && item.alternatives.length > 0) {
+  } else if (altsToUse && altsToUse.length > 0) {
     const altLines: string[] = ['**Alternatives & Explanations**:'];
-    item.alternatives.forEach((alt, aIdx) => {
+    altsToUse.forEach((alt, aIdx) => {
       const letter = String.fromCharCode(65 + aIdx);
       const mark = alt.is_correct ? '✓ True' : '✗ False';
       const entryParts = [`- **(${letter}) [${mark}]** ${alt.text.trim()}`];

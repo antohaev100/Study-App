@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { QuestionEntry, Alternative, SubQuestion, Citation } from '../types';
 import { RichContent } from './RichContent';
 import { resolveSourceUrl } from '../utils/sourceUrls';
@@ -50,8 +50,21 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     setShowAbbreviations(false);
   }, [question.id]);
 
+  // Shuffle multiple choice alternatives stably per question instance
+  const shuffledAlternatives = useMemo(() => {
+    if (!question.alternatives || question.alternatives.length <= 1) {
+      return question.alternatives || [];
+    }
+    const list = [...question.alternatives];
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  }, [question.id, question.alternatives]);
+
   const handleCopy = async () => {
-    const text = formatQuestionForClipboard(question);
+    const text = formatQuestionForClipboard(question, 0, shuffledAlternatives);
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(text);
@@ -412,7 +425,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           </div>
 
           <div className="flex flex-col gap-3">
-            {question.alternatives.map((alt: Alternative, idx: number) => {
+            {shuffledAlternatives.map((alt: Alternative, idx: number) => {
               const isRevealed = !!revealedStates[idx];
               const letter = String.fromCharCode(65 + idx);
               const isDetailExpanded = expandedDetails[idx] !== false;
@@ -428,7 +441,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
               return (
                 <div
-                  key={idx}
+                  key={`${question.id}-alt-${idx}-${alt.text.slice(0, 15)}`}
                   className="border border-[#e0e0e0] rounded-md bg-white overflow-hidden shadow-2xs transition"
                 >
                   {/* Alternative Button */}

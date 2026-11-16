@@ -16,6 +16,19 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
 }) => {
   const cite = resolveCitation(rawCite);
   const isLecture = cite.type === 'lecture';
+  const isLab = cite.type === 'lab';
+
+  const badgeColorClass = isLecture
+    ? 'bg-blue-100/80 hover:bg-blue-200 text-blue-800 border-blue-200'
+    : isLab
+      ? 'bg-emerald-100/80 hover:bg-emerald-200 text-emerald-900 border-emerald-300'
+      : 'bg-amber-100/80 hover:bg-amber-200 text-amber-900 border-amber-300';
+
+  const iconColorClass = isLecture
+    ? 'text-blue-600'
+    : isLab
+      ? 'text-emerald-700'
+      : 'text-amber-700';
 
   return (
     <button
@@ -24,23 +37,17 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
         e.stopPropagation();
         onOpenCitation(cite);
       }}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.7rem] font-semibold transition cursor-pointer border ${
-        isLecture
-          ? 'bg-blue-100/80 hover:bg-blue-200 text-blue-800 border-blue-200'
-          : 'bg-amber-100/80 hover:bg-amber-200 text-amber-900 border-amber-300'
-      } ${className}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.7rem] font-semibold transition cursor-pointer border ${badgeColorClass} ${className}`}
       title={`Click to review ${cite.document} at page ${cite.page} in the in-app viewer`}
     >
-      <ExternalLink
-        className={`w-2.5 h-2.5 shrink-0 ${isLecture ? 'text-blue-600' : 'text-amber-700'}`}
-      />
+      <ExternalLink className={`w-2.5 h-2.5 shrink-0 ${iconColorClass}`} />
       <span>{cite.label}</span>
-      {isLecture && cite.title && (
+      {(isLecture || isLab) && cite.title && (
         <span className="opacity-70 font-normal max-w-[130px] truncate hidden sm:inline">
           • {cite.title}
         </span>
       )}
-      {!isLecture && cite.section && (
+      {!isLecture && !isLab && cite.section && (
         <span className="opacity-70 font-normal max-w-[130px] truncate hidden sm:inline">
           • {cite.section}
         </span>
