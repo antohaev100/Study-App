@@ -1,127 +1,79 @@
 # AI Prompt: Generate Lecture Slides Index JSON
 
 > **Usage Instructions**:  
-> Provide this prompt to an LLM (Gemini, Claude, GPT, etc.) along with:
+> Provide this prompt to an LLM along with:
 > 1. The schema template: `slides_index_template.json`
-> 2. The course's lecture slide PDF files (or slide deck text outlines / tables of contents)
+> 2. The course lecture slide PDF (typically 30–50 slides per deck)
 
 ---
 
 ## Prompt to Copy & Paste to the AI
 
-```markdown
-You are a course curriculum indexing specialist and technical document mapper.
+You are a course curriculum indexing specialist, technical document mapper, and pedagogical structuring expert.
 
 ### Objective
-Your task is to index one or more lecture slide decks for a university or technical course, producing a valid **Slides Index JSON file** (`slides_index.json`) that strictly adheres to the schema provided in `slides_index_template.json`.
-
-The structure matches the Recommended Readings index schema exactly. The study application uses this index to power Lecture View slide navigation, full-text concept search, and 1-click citation jumps from exam questions.
+Your task is to thoroughly read the provided lecture slide deck (typically 30–50 slides), synthesize its pedagogical structure, and produce a valid **Slides Index JSON file** (`slides_index.json`) strictly adhering to the schema in `slides_index_template.json`.
 
 ---
 
-### Structure & Fields
+### Critical Indexing & Extraction Rules
 
-The JSON file must be a single top-level object where each key is the exact bare PDF filename of a lecture slide deck (e.g. `"DVAD27_Lectures.pdf"`, `"Lectures_Part1.pdf"`):
+1. **Holistic Reading & Disambiguation (No Generic Titles)**:
+   - Read each slide's body content, equations, code, and diagrams—do not merely extract the header string.
+   - Disambiguate repeated slide titles (e.g., consecutive slides titled "Example", "Case Study", "Architecture", or "Properties") by appending specific context derived from the slide's actual body content (e.g., `"Example: Two-Sample t-Test Calculation"`, `"Example: Paired Difference Analysis"`).
+   - Strip low-value boilerplate (course codes, semester labels, dates, professor names, "Slide X of Y").
 
-For each lecture PDF entry, provide:
+2. **1-to-1 Physical Alignment & Anchoring**:
+   - `total_slides` MUST match the exact physical sheet/page count in the PDF document (`len(slides)`).
+   - **EVERY physical slide from 1 to `total_slides` must have an entry in `pageMap`**. Never skip title pages, divider slides, review slides, or question pages.
+   - The array must be strictly sequential with `slide` incrementing by 1: `slide: 1, 2, 3, ..., total_slides`.
+   - **End Anchor Check**: The final element in `pageMap` MUST have `"slide": total_slides`. If `total_slides` is 38, the last entry must be slide 38.
 
-1. **`id`** (string):
-   - A clean, unique kebab-case identifier for this slide deck (e.g. `"lectures-dvad27"`, `"lectures-part1"`). Exam questions and lecture additions will cite slides from this deck using this `id`.
+3. **Logical Slide Numbers (`page`)**:
+   - `page` represents the visible slide number printed on the presentation slide itself.
+   - Set `"page": null` for unnumbered slides (title covers, agenda/outline slides, transition/section dividers).
+   - Set `"page": <int>` when a visible slide number is printed.
 
-2. **`title`** (string):
-   - Full descriptive title of the slide deck or lecture series (e.g., `"DVAD27 Systems Modeling and Simulation: Core Lecture Slides"`).
-
-3. **`author`** (string):
-   - Primary instructor(s), university department, or organization (e.g., `"Department of Computer Science"`).
-
-4. **`description`** (string):
-   - 1–2 sentence summary of what major topics and concepts this slide deck covers.
-
-5. **`total_slides`** (integer):
-   - Total physical slide count (the total number of sheets/pages in the PDF document).
-
-6. **`total_pages`** (integer or `null`):
-   - Total logical numbered slides/pages as displayed on the presentation slides (e.g., `448`, or `null` if slides do not display page numbers). Pages and slides often do not map 1-to-1 because title slides, agenda slides, or section dividers are often unnumbered.
-
-7. **`pageMap`** (array):
-   - **CRITICAL REQUIREMENT: EVERY SINGLE PHYSICAL SLIDE FROM 1 TO `total_slides` MUST HAVE AN ENTRY IN `pageMap`. NO SLIDES MAY BE SKIPPED.**
-   - The array MUST be strictly ordered with `slide` incrementing by 1: `slide: 1, 2, 3, 4, ..., total_slides`.
-   - **`slide`** (integer): The 1-indexed physical sheet number inside the PDF (`1` is the first slide of the PDF).
-   - **`page`** (integer or `null`): The logical slide number as printed on the slide itself (set to `null` for unnumbered/title/divider slides; or integer number if printed).
-   - **`title`** (string): Concise, meaningful topic title of the slide. Strip repetitive boilerplate (university logos, dates, professor names, raw slide numbers).
-   - **`section`** (string): The module, chapter, or lecture topic grouping to which this slide belongs (e.g., `"Course Introduction"`, `"Comparisons and ANOVA"`).
+4. **Section Cohesion**:
+   - Assign every slide a meaningful `section` representing the topic grouping or module (e.g., `"Course Introduction"`, `"Hypothesis Testing"`, `"Summary & Next Steps"`).
+   - Multi-slide topic arcs must share the same `section` name.
 
 ---
 
-### Example Entry
+### Markdown & LaTeX Formatting in JSON (CRITICAL RULES)
 
-```json
-{
-  "DVAD27_Lectures.pdf": {
-    "id": "lectures-dvad27",
-    "title": "Systems Modeling and Simulation: Core Lecture Slides",
-    "author": "Department of Computer Science",
-    "description": "Core lecture slide deck covering performance comparison, statistical ANOVA, Monte Carlo and discrete-event simulation architecture, and NS-2 network simulation scripting.",
-    "total_slides": 450,
-    "total_pages": 448,
-    "pageMap": [
-      {
-        "slide": 1,
-        "page": null,
-        "title": "Course Overview and Syllabus",
-        "section": "Course Introduction"
-      },
-      {
-        "slide": 2,
-        "page": 1,
-        "title": "Comparing Two Alternatives: Motivation and Cases",
-        "section": "Comparisons and ANOVA"
-      },
-      {
-        "slide": 3,
-        "page": 2,
-        "title": "Non-Corresponding Measurements: Assumptions",
-        "section": "Comparisons and ANOVA"
-      },
-      {
-        "slide": 4,
-        "page": 3,
-        "title": "Non-Corresponding Measurements: t-Test Procedure",
-        "section": "Comparisons and ANOVA"
-      },
-      {
-        "slide": 5,
-        "page": 4,
-        "title": "Difference of Means: Large Sample Confidence Interval",
-        "section": "Comparisons and ANOVA"
-      },
-      {
-        "slide": 6,
-        "page": 5,
-        "title": "Confidence Interval Interpretation and Practical Significance",
-        "section": "Comparisons and ANOVA"
-      },
-      {
-        "slide": 7,
-        "page": 6,
-        "title": "Small Sample Inferences and Normal Distribution Requirements",
-        "section": "Comparisons and ANOVA"
-      },
-      {
-        "slide": 8,
-        "page": 7,
-        "title": "Paired vs. Unpaired Observations: Criteria for Selection",
-        "section": "Comparisons and ANOVA"
-      }
-    ]
-  }
-}
-```
+All string fields (`title`, `description`, `pageMap[].title`, `pageMap[].section`) support **GitHub-Flavored Markdown and KaTeX math** (`$inline$` or `$$display$$`):
+
+1. **JSON Double-Escaping**:
+   - In JSON strings, `\` is an escape character. **Every LaTeX command backslash MUST be double-escaped (`\\`)**:
+     - Write `$\\alpha$`, NEVER `$\alpha$`.
+     - Write `$\\text{ms}$`, NEVER `$\text{ms}$`.
+     - Write `$$\\frac{a}{b}$$`, NEVER `$$\frac{a}{b}$$`.
+     - Write `$\\mathcal{O}(N \\log N)$`, NEVER `$\mathcal{O}(N \log N)$`.
+2. **Literal Dollars & Formatting**:
+   - Escape literal dollar signs in prose as `\$` (e.g., `\$100`).
+   - Use backticks (`` `$var` ``) exclusively for inline code, shell commands, or variable names; use single dollar signs (`$...$`) exclusively for math equations.
+
+---
+
+### Schema and Field Specifications
+
+The JSON output must be a single top-level object keyed by the exact bare PDF filename (e.g., `"Lecture03_Comparisons.pdf"`):
+
+- **`id`** (string): Unique kebab-case identifier (e.g., `"lec03-comparisons"`).
+- **`title`** (string): Full descriptive title of the lecture.
+- **`author`** (string): Instructor(s), department, or university.
+- **`description`** (string): 1–2 sentence summary of core concepts covered in this deck.
+- **`total_slides`** (integer): Total physical sheets in the PDF (e.g., `36`).
+- **`total_pages`** (integer or `null`): Highest printed slide number, or `null` if slides are unnumbered.
+- **`pageMap`** (array of objects):
+  - **`slide`** (integer): 1-indexed physical PDF sheet number (`1` to `total_slides`).
+  - **`page`** (integer or `null`): Printed logical slide number, or `null`.
+  - **`title`** (string): Specific, meaningful slide topic title.
+  - **`section`** (string): Topic or lecture module grouping.
 
 ---
 
 ### Output Format
-- Output **ONLY** a valid JSON object matching the structure illustrated in `slides_index_template.json`.
-- Do not output introductory conversational text or concluding remarks outside the code block.
-- Verify that every document key is valid and every slide from 1 to `total_slides` is present in `pageMap`.
-```
+- Output **ONLY** a valid JSON object matching the template schema.
+- Do not output preamble, Markdown commentary, or follow-up notes outside the JSON block.

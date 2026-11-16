@@ -1,72 +1,90 @@
 {
-  "_comment": "Course Study App — Lecture Slides Index Template. Each top-level key corresponds to the bare PDF filename of the slide deck. CRITICAL INSTRUCTION: Every single physical slide from 1 to total_slides MUST have an entry in pageMap without skipping any slides.",
-  "DVAD27_Lectures.pdf": {
-    "id": "lectures-dvad27",
-    "title": "Systems Modeling and Simulation: Core Lecture Slides",
+  "_comment": "Course Study App — Single Lecture Slide Deck Index Template (30-50 slides). Keys are bare PDF filenames. Every physical slide from 1 to total_slides must have an entry in pageMap without skipping.",
+  "markdown_and_latex_support": {
+    "note": "ALL STRING FIELDS (title, author, description, pageMap[].title, pageMap[].section) SUPPORT GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
+    "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is an escape character. Every LaTeX command MUST use double backslashes '\\\\'. Example: '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', '$\\mathcal{O}(N \\log N)$'. Escape literal dollar signs in prose as \\$.",
+    "code_and_math_rules": "Use backticks (`$var`) exclusively for code and variables; use dollar signs ($math$) exclusively for LaTeX math."
+  },
+  "_schema_field_definitions": {
+    "id": "String. Unique kebab-case identifier used for internal system references and citations.",
+    "title": "MARKDOWN & LATEX STRING FIELD. Full descriptive title of the lecture deck.",
+    "author": "MARKDOWN & LATEX STRING FIELD. Instructor(s), department, or institution.",
+    "description": "MARKDOWN & LATEX STRING FIELD. 1-2 sentence synopsis of key concepts covered.",
+    "total_slides": "Integer. Total physical sheets in the PDF.",
+    "total_pages": "Integer or Null. Total numbered presentation slides, or null if unnumbered.",
+    "pageMap": "Array of SlideNode objects. Strictly sequential: slide 1 to total_slides.",
+    "pageMap[].slide": "Integer. Physical sheet number (1-indexed).",
+    "pageMap[].page": "Integer or Null. Logical/printed slide number on the slide.",
+    "pageMap[].title": "MARKDOWN & LATEX STRING FIELD. Disambiguated, meaningful slide topic title.",
+    "pageMap[].section": "MARKDOWN & LATEX STRING FIELD. Module or thematic group name."
+  },
+  "Lecture03_Comparisons_and_ANOVA.pdf": {
+    "id": "lec03-comparisons-anova",
+    "title": "Lecture 3: Comparing Alternatives and One-Way ANOVA",
     "author": "Department of Computer Science",
-    "description": "Core lecture slide deck covering performance comparison, statistical ANOVA, Monte Carlo and discrete-event simulation architecture, and NS-2 network simulation scripting.",
-    "total_slides": 450,
-    "total_pages": 448,
+    "description": "Statistical evaluation of system performance comparing two or more alternatives using unpaired and paired t-tests, confidence intervals, and one-way ANOVA.",
+    "total_slides": 36,
+    "total_pages": 34,
     "pageMap": [
       {
         "slide": 1,
         "page": null,
-        "title": "Course Overview and Syllabus",
-        "section": "Course Introduction"
+        "title": "Lecture Overview: Comparing System Alternatives",
+        "section": "Introduction"
       },
       {
         "slide": 2,
         "page": 1,
-        "title": "Comparing Two Alternatives: Motivation and Cases",
-        "section": "Comparisons and ANOVA"
+        "title": "Motivation: Comparing Two System Designs",
+        "section": "Two Alternatives"
       },
       {
         "slide": 3,
         "page": 2,
-        "title": "Non-Corresponding Measurements: Assumptions",
-        "section": "Comparisons and ANOVA"
+        "title": "Independent Measurements: Model Assumptions",
+        "section": "Two Alternatives"
       },
       {
         "slide": 4,
         "page": 3,
-        "title": "Non-Corresponding Measurements: t-Test Procedure",
-        "section": "Comparisons and ANOVA"
+        "title": "Confidence Interval for Difference of Means: $\\bar{x}_1 - \\bar{x}_2$",
+        "section": "Two Alternatives"
       },
       {
         "slide": 5,
         "page": 4,
-        "title": "Difference of Means: Large Sample Confidence Interval",
-        "section": "Comparisons and ANOVA"
+        "title": "Example: Comparing Cache Replacement Policies",
+        "section": "Two Alternatives"
       },
       {
         "slide": 6,
         "page": 5,
-        "title": "Confidence Interval Interpretation and Practical Significance",
-        "section": "Comparisons and ANOVA"
+        "title": "Paired vs. Unpaired Observations: Selection Criteria",
+        "section": "Paired Comparisons"
       },
       {
         "slide": 7,
         "page": 6,
-        "title": "Small Sample Inferences and Normal Distribution Requirements",
-        "section": "Comparisons and ANOVA"
+        "title": "Paired t-Test Formulation and Degrees of Freedom",
+        "section": "Paired Comparisons"
       },
       {
         "slide": 8,
         "page": 7,
-        "title": "Paired vs. Unpaired Observations: Criteria for Selection",
-        "section": "Comparisons and ANOVA"
+        "title": "Example: Compiler Optimization Runtimes with Paired Differences",
+        "section": "Paired Comparisons"
       },
       {
         "slide": 9,
         "page": 8,
-        "title": "Paired Observations: One-Sample t-Test on Differences",
-        "section": "Comparisons and ANOVA"
+        "title": "Introduction to One-Way ANOVA: $k \\ge 3$ Alternatives",
+        "section": "One-Way ANOVA"
       },
       {
         "slide": 10,
         "page": 9,
-        "title": "Visualizing Confidence Intervals and Deciding Equivalence",
-        "section": "Comparisons and ANOVA"
+        "title": "Sum of Squares Decomposition: $SS_T = SS_A + SS_E$",
+        "section": "One-Way ANOVA"
       }
     ]
   }
