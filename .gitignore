@@ -4,11 +4,11 @@ node_modules
 dist
 Code/node_modules
 Code/dist
-Code/src/data/exam_answers/*
-Code/src/data/exams/*
-Code/src/data/lectures/*
-Code/src/data/RR/*
+Code/src/data/exam_answers/*.json
+Code/src/data/exams/*.pdf
+Code/src/data/lectures/*.pdf
+Code/src/data/RR/*.pdf
 Code/src/data/*.json
-Code/src/data/lecture_additions/*
-Code/src/data/labs/*
+Code/src/data/lecture_additions/*.json
+Code/src/data/labs/*.pdf
 *.txt
