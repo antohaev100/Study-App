@@ -27,6 +27,7 @@ function normalizeDeckKey(raw: string): string {
     .replace(/^lectures\//i, '')
     .replace(/\.pdf$/i, '')
     .toLowerCase()
+    .replace(/[-_]/g, '_')
     .trim();
 }
 
@@ -36,6 +37,7 @@ export function getAllLectureAdditions(): LectureAdditionFile[] {
     string,
     {
       lecture_id: string;
+      lecture_index?: string | number | null;
       document: string;
       title: string;
       slidesMap: Map<number, LectureSlideAddition>;
@@ -43,23 +45,47 @@ export function getAllLectureAdditions(): LectureAdditionFile[] {
   >();
 
   for (const path in additionModules) {
+    // Skip slide index files if placed in lecture_additions folder
+    if (path.includes('slide_index') || path.includes('slides_index')) {
+      continue;
+    }
+
     const mod = additionModules[path];
     const data = (mod && 'default' in mod ? mod.default : mod) as LectureAdditionFile;
     if (!data || (!data.lecture_id && !data.document) || !Array.isArray(data.slides)) {
       continue;
     }
 
-    // Resolve document filename and canonical title from slides_index.json if omitted
+    // Resolve document filename, canonical title, and lecture index from slides_index if omitted
     let docName = data.document;
     let canonicalTitle = data.title;
+    let lectureIndex = data.lecture_index ?? null;
 
     if (data.lecture_id) {
+      const dataIdNorm = normalizeDeckKey(data.lecture_id);
       for (const [sKey, sVal] of Object.entries(rawSlidesIndex)) {
         const entry = sVal as any;
         if (!sKey.startsWith('_') && !/^\d+$/.test(sKey) && entry) {
-          if (entry.id?.toLowerCase() === data.lecture_id.toLowerCase()) {
-            if (!docName) docName = sKey;
+          const entryIdNorm = entry.id ? normalizeDeckKey(String(entry.id)) : '';
+          const sKeyNorm = normalizeDeckKey(sKey);
+          if (entryIdNorm === dataIdNorm || sKeyNorm === dataIdNorm) {
+            if (!docName) docName = entry.document || sKey;
             if (!canonicalTitle) canonicalTitle = entry.title;
+            if (lectureIndex == null) lectureIndex = entry.lecture_index ?? entry.lecture_number ?? null;
+            break;
+          }
+        }
+      }
+    }
+
+    if ((!canonicalTitle || lectureIndex == null) && docName) {
+      const docNorm = normalizeDeckKey(docName);
+      for (const [sKey, sVal] of Object.entries(rawSlidesIndex)) {
+        const entry = sVal as any;
+        if (!sKey.startsWith('_') && !/^\d+$/.test(sKey) && entry) {
+          if (normalizeDeckKey(sKey) === docNorm || (entry.id && normalizeDeckKey(String(entry.id)) === docNorm)) {
+            if (!canonicalTitle) canonicalTitle = entry.title;
+            if (lectureIndex == null) lectureIndex = entry.lecture_index ?? entry.lecture_number ?? null;
             break;
           }
         }
@@ -75,6 +101,7 @@ export function getAllLectureAdditions(): LectureAdditionFile[] {
     if (!deck) {
       deck = {
         lecture_id: data.lecture_id || deckKey,
+        lecture_index: lectureIndex,
         document: docName,
         title: canonicalTitle || data.title || docName.replace(/\.pdf$/i, ''),
         slidesMap: new Map<number, LectureSlideAddition>(),
@@ -86,6 +113,9 @@ export function getAllLectureAdditions(): LectureAdditionFile[] {
       }
       if (data.lecture_id && !deck.lecture_id) {
         deck.lecture_id = data.lecture_id;
+      }
+      if (lectureIndex != null && deck.lecture_index == null) {
+        deck.lecture_index = lectureIndex;
       }
     }
 
@@ -135,6 +165,7 @@ export function getAllLectureAdditions(): LectureAdditionFile[] {
     const sortedSlides = Array.from(deck.slidesMap.values()).sort((a, b) => a.slide - b.slide);
     files.push({
       lecture_id: deck.lecture_id,
+      lecture_index: deck.lecture_index,
       document: deck.document,
       title: deck.title,
       slides: sortedSlides,
@@ -174,24 +205,31 @@ export function formatSlideAdditionForClipboard(
   const deckKey = normalizeDeckKey(docName);
   let slideTitle = slide.title;
   let slideSection = slide.section;
+  let lectureIndex: string | number | null = null;
 
-  if (!slideTitle || !slideSection) {
-    for (const [sKey, sVal] of Object.entries(rawSlidesIndex)) {
-      const entry = sVal as any;
-      if (!sKey.startsWith('_') && !/^\d+$/.test(sKey) && entry) {
-        if (normalizeDeckKey(sKey) === deckKey || entry.id?.toLowerCase() === deckKey) {
+  for (const [sKey, sVal] of Object.entries(rawSlidesIndex)) {
+    const entry = sVal as any;
+    if (!sKey.startsWith('_') && !/^\d+$/.test(sKey) && entry) {
+      if (normalizeDeckKey(sKey) === deckKey || (entry.id && normalizeDeckKey(String(entry.id)) === deckKey)) {
+        if (!slideTitle || !slideSection) {
           const pm = entry.pageMap?.find((p: any) => p.slide === slide.slide);
           if (pm) {
             if (!slideTitle) slideTitle = pm.title;
             if (!slideSection) slideSection = pm.section;
           }
-          break;
         }
+        if (entry.lecture_index != null) lectureIndex = entry.lecture_index;
+        else if (entry.lecture_number != null) lectureIndex = entry.lecture_number;
+        break;
       }
     }
   }
 
-  const headerParts = [`# Lecture Slide Note: ${docName} — Slide ${slide.slide}`];
+  const lectureLabel = lectureIndex != null ? `Lecture ${lectureIndex} (${lectureTitle})` : lectureTitle;
+  const headerParts = [
+    `# Lecture Slide Note: ${docName} — Slide ${slide.slide}`,
+    `**Lecture**: ${lectureLabel}`,
+  ];
   if (slideTitle) headerParts.push(`**Slide Title**: ${slideTitle}`);
   if (slideSection) headerParts.push(`**Section / Module**: ${slideSection}`);
 
@@ -270,7 +308,10 @@ export function formatSlideAdditionForClipboard(
  * Formats an entire lecture deck's additions into a master Markdown document.
  */
 export function formatLectureAdditionsForClipboard(lecture: LectureAdditionFile): string {
+  const lecIdx = lecture.lecture_index;
+  const lecturePrefix = lecIdx != null ? `Lecture ${lecIdx}: ` : '';
   const title = lecture.title || lecture.document;
+  const displayTitle = lecturePrefix && !title.toLowerCase().startsWith('lecture') ? `${lecturePrefix}${title}` : title;
   const slides = (lecture.slides || []).filter(
     (s) =>
       (s.literature_additions && s.literature_additions.length > 0) ||
@@ -279,7 +320,7 @@ export function formatLectureAdditionsForClipboard(lecture: LectureAdditionFile)
   );
 
   const sections: string[] = [
-    `# Complete Lecture Synthesis & Exam Guide\n**Lecture**: ${title}\n**Document**: ${lecture.document}\n**Slides with Additions**: ${slides.length} slides indexed\n\n*This document contains deep literature additions from Recommended Readings, hands-on lab connections, and solved past exam questions for each slide. Use this alongside the lecture PDF.*`,
+    `# Complete Lecture Synthesis & Exam Guide\n**Lecture**: ${displayTitle}\n**Document**: ${lecture.document}\n**Slides with Additions**: ${slides.length} slides indexed\n\n*This document contains deep literature additions from Recommended Readings, hands-on lab connections, and solved past exam questions for each slide. Use this alongside the lecture PDF.*`,
   ];
 
   slides.forEach((slide) => {

@@ -10,4 +10,5 @@ Code/src/data/lectures/*
 Code/src/data/RR/*
 Code/src/data/*.json
 Code/src/data/lecture_additions/*
+Code/src/data/labs/*
 *.txt

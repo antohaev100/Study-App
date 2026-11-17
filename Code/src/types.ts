@@ -8,6 +8,7 @@ export interface Citation {
   section?: string;
   label?: string;
   title?: string;
+  lecture_index?: string | number | null;
 }
 
 export interface Alternative {
@@ -107,6 +108,7 @@ export interface LectureSlideAddition {
 
 export interface LectureAdditionFile {
   lecture_id?: string;
+  lecture_index?: string | number | null;
   document?: string;
   title?: string;
   slides: LectureSlideAddition[];

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { X, BookOpen, FileText, GraduationCap, ArrowUpRight, Terminal } from 'lucide-react';
 import { Citation } from '../types';
 import { resolveSourceUrl } from '../utils/sourceUrls';
-import { OutlineNode, rawLabsIndex } from '../utils/citationResolver';
+import { OutlineNode, rawLabsIndex, rawSlidesIndex } from '../utils/citationResolver';
 import { RichContent } from './RichContent';
 
 interface SourcesLibraryModalProps {
@@ -29,6 +29,8 @@ interface PageMapEntry {
 
 interface DocEntry {
   id?: string;
+  lecture_index?: string | number | null;
+  lecture_number?: string | number | null;
   title?: string;
   author?: string;
   description?: string;
@@ -44,17 +46,20 @@ interface DocEntry {
 }
 
 // Safely load index JSON files from src/data/ if available
-const slideModules = import.meta.glob<{ default: Record<string, DocEntry> }>(
-  '../data/slides_index.json',
-  { eager: true }
-);
-const rawSlidesIndex = Object.values(slideModules)[0]?.default || {};
-
 const rrModules = import.meta.glob<{ default: Record<string, DocEntry> }>(
   '../data/rr_index.json',
   { eager: true }
 );
 const rawRrIndex = Object.values(rrModules)[0]?.default || {};
+
+interface LectureSourceItem {
+  title: string;
+  lecture_index?: string | number | null;
+  document: string;
+  description: string;
+  page: number;
+  type: 'lecture';
+}
 
 export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
   isOpen,
@@ -63,7 +68,7 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const lectures = useMemo(() => {
+  const lectures: LectureSourceItem[] = useMemo(() => {
     const slidesRecord = (rawSlidesIndex || {}) as Record<string, DocEntry>;
     
     // Check if this is the modern unified format (keys are filenames, entries have pageMap or id)
@@ -72,15 +77,24 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
     );
 
     if (isModernFormat) {
-      return Object.entries(slidesRecord)
+      const list = Object.entries(slidesRecord)
         .filter(([key]) => !key.startsWith('_'))
         .map(([fileName, doc]) => {
-          const cleanTitle =
+          const lecIdx = doc.lecture_index ?? doc.lecture_number ?? null;
+          let rawTitle =
             doc.title ||
             fileName
               .replace(/\.pdf$/i, '')
               .replace(/^Lectures_/i, 'Course Lectures: ')
               .replace(/_/g, ' ');
+
+          // If lecture_index is supplied, strip any redundant "Lecture X:" prefix from title
+          if (lecIdx != null) {
+            rawTitle = rawTitle
+              .replace(/^Lecture\s*\d+\s*[:\-–—]\s*/i, '')
+              .replace(/^L\d+\s*[:\-–—]\s*/i, '')
+              .trim();
+          }
 
           const firstTitles: string[] = [];
           if (Array.isArray(doc.pageMap)) {
@@ -99,13 +113,25 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
               : `${slideCount} slides indexed`);
 
           return {
-            title: cleanTitle,
+            title: rawTitle,
+            lecture_index: lecIdx,
             document: fileName,
             description: desc,
             page: 1,
             type: 'lecture' as const,
           };
         });
+
+      list.sort((a, b) => {
+        const idxA = a.lecture_index != null ? Number(String(a.lecture_index).replace(/\D/g, '')) : NaN;
+        const idxB = b.lecture_index != null ? Number(String(b.lecture_index).replace(/\D/g, '')) : NaN;
+        if (!isNaN(idxA) && !isNaN(idxB)) return idxA - idxB;
+        if (!isNaN(idxA)) return -1;
+        if (!isNaN(idxB)) return 1;
+        return a.title.localeCompare(b.title);
+      });
+
+      return list;
     }
 
     // Fallback: legacy format where keys are slide numbers
@@ -158,6 +184,7 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
 
       return {
         title: cleanTitle,
+        lecture_index: null,
         document: doc.document,
         description: `Slides ${doc.minSlide}–${doc.maxSlide} (${doc.count} slides indexed). ${topicPreview}`,
         page: doc.minPage,
@@ -302,7 +329,14 @@ export const SourcesLibraryModal: React.FC<SourcesLibraryModalProps> = ({
                   >
                     <div>
                       <h3 className="font-semibold text-xs text-slate-900 group-hover:text-blue-700 mb-1 flex items-start justify-between gap-2">
-                        <span>{item.title}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {item.lecture_index != null && (
+                            <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[0.65rem] font-bold shrink-0">
+                              Lecture {item.lecture_index}
+                            </span>
+                          )}
+                          <span>{item.title}</span>
+                        </div>
                         <FileText className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                       </h3>
                       <p className="text-[0.75rem] text-slate-600 leading-relaxed mb-3">

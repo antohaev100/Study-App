@@ -17,6 +17,8 @@ export interface OutlineNode {
 
 export interface DocumentIndexEntry {
   id?: string;
+  lecture_index?: string | number | null;
+  lecture_number?: string | number | null;
   title?: string;
   author?: string;
   description?: string;
@@ -40,16 +42,64 @@ export interface ResolvedCitation extends Citation {
   section?: string;
   label: string;
   title?: string;
+  lecture_index?: string | number | null;
   type: 'lecture' | 'literature' | 'lab';
   url: string;
 }
 
 // Load slide, RR, and Labs indexes from data folder
-const slideModules = import.meta.glob<{ default: Record<string, DocumentIndexEntry> }>(
-  '../data/slides_index.json',
+const slideModules = import.meta.glob<{ default: Record<string, any> }>(
+  [
+    '../data/slides_index.json',
+    '../data/slide_index.json',
+    '../data/*slide_index*.json',
+    '../data/*slides_index*.json',
+    '../data/slides_index/*.json',
+    '../data/slide_index/*.json',
+    '../data/slides/*.json',
+    '../data/lecture_additions/*slide_index*.json',
+    '../data/lecture_additions/*slides_index*.json',
+    '../data/lecture_additions/**/*slide_index*.json',
+    '../data/lecture_additions/**/*slides_index*.json',
+  ],
   { eager: true }
 );
-export const rawSlidesIndex: Record<string, any> = Object.values(slideModules)[0]?.default || {};
+
+function loadAllSlideIndexes(): Record<string, any> {
+  const merged: Record<string, any> = {};
+
+  for (const path in slideModules) {
+    const mod = slideModules[path];
+    const data = (mod && 'default' in mod ? mod.default : mod) as Record<string, any>;
+    if (!data || typeof data !== 'object') continue;
+
+    // Check if this file is a direct single-deck object
+    if (Array.isArray(data.pageMap)) {
+      const baseFilename = path.split('/').pop()?.replace(/_slides?_index.*$/i, '').replace(/\.json$/i, '') || 'Lectures';
+      const docKey = data.document || (data.id ? `${data.id}.pdf` : `${baseFilename}.pdf`);
+      merged[docKey] = {
+        ...data,
+        document: data.document || docKey,
+      };
+      continue;
+    }
+
+    // Otherwise it's a map of { [filenameOrSlideNum]: DocumentIndexEntry }
+    for (const [key, val] of Object.entries(data)) {
+      if (!val || key.startsWith('_') || key.startsWith('$') || key === 'markdown_and_latex_support') {
+        continue;
+      }
+      if (typeof val === 'object' && val !== null && !val.document && !/^\d+$/.test(key)) {
+        val.document = key;
+      }
+      merged[key] = val;
+    }
+  }
+
+  return merged;
+}
+
+export const rawSlidesIndex: Record<string, any> = loadAllSlideIndexes();
 
 const rrModules = import.meta.glob<{ default: Record<string, DocumentIndexEntry> }>(
   '../data/rr_index.json',
@@ -299,10 +349,12 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
     '';
 
   // Format a friendly display label
+  const lecIdx = (matchedLookup?.doc as any)?.lecture_index ?? (matchedLookup?.doc as any)?.lecture_number ?? cite.lecture_index;
   let resolvedLabel = cite.label;
   if (!resolvedLabel) {
     if (type === 'lecture') {
-      resolvedLabel = `Slide ${slideNum}`;
+      const prefix = lecIdx != null ? `L${lecIdx} ` : '';
+      resolvedLabel = `${prefix}Slide ${slideNum}`;
     } else if (type === 'lab') {
       const labNum = (matchedLookup?.doc as any)?.lab_number;
       const labPrefix = labNum ? `Lab ${labNum}` : docTitle || 'Lab';
@@ -333,6 +385,7 @@ export function resolveCitation(cite: Citation): ResolvedCitation {
     title: resolvedTitle,
     section: resolvedSection,
     label: resolvedLabel,
+    lecture_index: lecIdx,
     type,
     url: resolvedUrl,
   };

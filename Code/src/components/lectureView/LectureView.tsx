@@ -7,6 +7,7 @@ import {
 } from '../../utils/loadLectureAdditions';
 import { resolveSourceUrl } from '../../utils/sourceUrls';
 import { normalizeQuestionEntry } from '../../utils/questionFormatters';
+import { rawSlidesIndex } from '../../utils/citationResolver';
 import { RichContent } from '../RichContent';
 import { CitationBadge } from '../common/CitationBadge';
 import { TopicQuestionItem } from '../topicGuide/TopicQuestionItem';
@@ -26,13 +27,6 @@ import {
   FlaskConical,
   AlertTriangle,
 } from 'lucide-react';
-
-// Load slide deck index
-const slideModules = import.meta.glob<{ default: Record<string, any> }>(
-  '../../data/slides_index.json',
-  { eager: true }
-);
-const rawSlidesIndex = Object.values(slideModules)[0]?.default || {};
 
 interface LectureViewProps {
   onOpenCitation: (citation: Citation) => void;
@@ -55,14 +49,18 @@ export const LectureView: React.FC<LectureViewProps> = ({
 }) => {
   // 1. Available lecture decks
   const availableDecks = useMemo(() => {
-    const list: Array<{ id: string; document: string; title: string; totalSlides: number }> = [];
+    const list: Array<{ id: string; lecture_index?: string | number | null; document: string; title: string; totalSlides: number }> = [];
 
-    // First collect all decks defined in slides_index.json (authoritative source)
+    // Helper for key normalization (strips .pdf, replaces hyphens/underscores)
+    const norm = (s: string) => s.toLowerCase().replace(/^lectures\//i, '').replace(/\.pdf$/i, '').replace(/[-_]/g, '_').trim();
+
+    // First collect all decks defined in slides_index (authoritative source)
     Object.entries(rawSlidesIndex).forEach(([key, val]: [string, any]) => {
       if (!key.startsWith('_') && !/^\d+$/.test(key) && val?.title) {
         list.push({
           id: val.id || key,
-          document: key,
+          lecture_index: val.lecture_index ?? val.lecture_number ?? null,
+          document: val.document || key,
           title: val.title || key,
           totalSlides: val.total_slides || val.pages || val.pageMap?.length || 1,
         });
@@ -72,14 +70,24 @@ export const LectureView: React.FC<LectureViewProps> = ({
     // Also incorporate any decks from additions files if not already in slides_index
     rawLectureAdditions.forEach((add) => {
       const doc = add.document || (add.lecture_id ? `${add.lecture_id}.pdf` : 'Lectures.pdf');
-      const existing = list.find(
-        (d) =>
-          d.document.toLowerCase() === doc.toLowerCase() ||
-          (add.lecture_id && d.id.toLowerCase() === add.lecture_id.toLowerCase())
-      );
+      const addDocNorm = norm(doc);
+      const addIdNorm = add.lecture_id ? norm(add.lecture_id) : '';
+
+      const existing = list.find((d) => {
+        const dDocNorm = norm(d.document);
+        const dIdNorm = norm(d.id);
+        return (
+          dDocNorm === addDocNorm ||
+          (addIdNorm && dIdNorm === addIdNorm) ||
+          (addIdNorm && dDocNorm === addIdNorm) ||
+          (dIdNorm && addDocNorm === dIdNorm)
+        );
+      });
+
       if (!existing) {
         list.push({
           id: add.lecture_id || doc,
+          lecture_index: add.lecture_index ?? null,
           document: doc,
           title: add.title || doc,
           totalSlides: add.slides.reduce((max, s) => Math.max(max, s.slide), 1),
@@ -91,11 +99,22 @@ export const LectureView: React.FC<LectureViewProps> = ({
     if (list.length === 0) {
       list.push({
         id: 'lectures-default',
+        lecture_index: null,
         document: 'Lectures.pdf',
         title: 'Course Lecture Slides',
         totalSlides: 1,
       });
     }
+
+    // Sort by lecture_index ascending (e.g., L1, L2, L3, L4)
+    list.sort((a, b) => {
+      const idxA = a.lecture_index != null ? Number(String(a.lecture_index).replace(/\D/g, '')) : NaN;
+      const idxB = b.lecture_index != null ? Number(String(b.lecture_index).replace(/\D/g, '')) : NaN;
+      if (!isNaN(idxA) && !isNaN(idxB)) return idxA - idxB;
+      if (!isNaN(idxA)) return -1;
+      if (!isNaN(idxB)) return 1;
+      return a.title.localeCompare(b.title);
+    });
 
     return list;
   }, []);
@@ -104,25 +123,46 @@ export const LectureView: React.FC<LectureViewProps> = ({
     return availableDecks[0]?.document || 'Lectures.pdf';
   });
 
+  // Keep selectedDeckDoc synced if availableDecks populates
+  useEffect(() => {
+    if (availableDecks.length > 0 && !availableDecks.some((d) => d.document === selectedDeckDoc)) {
+      setSelectedDeckDoc(availableDecks[0].document);
+      setCurrentSlideNum(1);
+    }
+  }, [availableDecks, selectedDeckDoc]);
+
   // Current lecture addition file
   const currentAdditionFile = useMemo(() => {
+    const selNorm = selectedDeckDoc.toLowerCase().replace(/^lectures\//i, '').replace(/\.pdf$/i, '').replace(/[-_]/g, '_').trim();
     return (
-      rawLectureAdditions.find(
-        (a) =>
-          a.document.toLowerCase() === selectedDeckDoc.toLowerCase() ||
-          a.lecture_id.toLowerCase() === selectedDeckDoc.toLowerCase()
-      ) || null
+      rawLectureAdditions.find((a) => {
+        const aDoc = a.document ? a.document.toLowerCase().trim() : '';
+        const aDocNorm = aDoc.replace(/^lectures\//i, '').replace(/\.pdf$/i, '').replace(/[-_]/g, '_');
+        const aId = a.lecture_id ? a.lecture_id.toLowerCase().trim() : '';
+        const aIdNorm = aId.replace(/[-_]/g, '_');
+
+        return (
+          (aDoc && (aDoc === selectedDeckDoc.toLowerCase() || aDocNorm === selNorm)) ||
+          (aId && (aId === selectedDeckDoc.toLowerCase() || aIdNorm === selNorm))
+        );
+      }) || null
     );
   }, [selectedDeckDoc]);
 
   // Current deck metadata from slides_index
   const deckIndexEntry = useMemo(() => {
     if (rawSlidesIndex[selectedDeckDoc]) return rawSlidesIndex[selectedDeckDoc];
-    const match = Object.entries(rawSlidesIndex).find(
-      ([k, v]: [string, any]) =>
+    const selNorm = selectedDeckDoc.toLowerCase().replace(/^lectures\//i, '').replace(/\.pdf$/i, '').replace(/[-_]/g, '_').trim();
+
+    const match = Object.entries(rawSlidesIndex).find(([k, v]: [string, any]) => {
+      const kNorm = k.toLowerCase().replace(/^lectures\//i, '').replace(/\.pdf$/i, '').replace(/[-_]/g, '_').trim();
+      const vIdNorm = v?.id ? String(v.id).toLowerCase().replace(/[-_]/g, '_').trim() : '';
+      return (
         k.toLowerCase() === selectedDeckDoc.toLowerCase() ||
-        v?.id?.toLowerCase() === selectedDeckDoc.toLowerCase()
-    );
+        kNorm === selNorm ||
+        (vIdNorm && vIdNorm === selNorm)
+      );
+    });
     return match ? match[1] : null;
   }, [selectedDeckDoc]);
 
@@ -297,11 +337,21 @@ export const LectureView: React.FC<LectureViewProps> = ({
               }}
               className="bg-slate-100 hover:bg-slate-200/70 border border-slate-300 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1.5 pr-8 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {availableDecks.map((deck) => (
-                <option key={deck.document} value={deck.document}>
-                  {deck.title.length > 40 ? `${deck.title.slice(0, 37)}...` : deck.title}
-                </option>
-              ))}
+              {availableDecks.map((deck) => {
+                let displayTitle = deck.title;
+                if (deck.lecture_index != null) {
+                  const cleanTitle = deck.title
+                    .replace(/^Lecture\s*\d+\s*[:\-–—]\s*/i, '')
+                    .replace(/^L\d+\s*[:\-–—]\s*/i, '')
+                    .trim();
+                  displayTitle = `Lecture ${deck.lecture_index}: ${cleanTitle}`;
+                }
+                return (
+                  <option key={deck.document} value={deck.document}>
+                    {displayTitle.length > 45 ? `${displayTitle.slice(0, 42)}...` : displayTitle}
+                  </option>
+                );
+              })}
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
@@ -523,8 +573,18 @@ export const LectureView: React.FC<LectureViewProps> = ({
                 <div className="text-sm font-bold text-slate-100 truncate">
                   {currentSlideMeta.title}
                 </div>
-                <div className="text-[0.7rem] text-slate-400 truncate">
-                  {currentSlideMeta.section} • {selectedDeckDoc}
+                <div className="text-[0.7rem] text-slate-400 truncate flex items-center gap-1.5 flex-wrap">
+                  {(deckIndexEntry?.lecture_index != null || deckIndexEntry?.lecture_number != null) && (
+                    <>
+                      <span className="font-semibold text-blue-400">
+                        Lecture {deckIndexEntry.lecture_index ?? deckIndexEntry.lecture_number}
+                      </span>
+                      <span>•</span>
+                    </>
+                  )}
+                  <span>{currentSlideMeta.section}</span>
+                  <span>•</span>
+                  <span className="text-slate-400">{selectedDeckDoc}</span>
                 </div>
               </div>
             </div>

@@ -1,26 +1,36 @@
 {
-  "_comment": "Course Study App — Single Lecture Slide Deck Index Template (30-50 slides). Keys are bare PDF filenames. Every physical slide from 1 to total_slides must have an entry in pageMap without skipping.",
+  "_comment": "Course Study App — Single Lecture Slide Deck Index Template (30-50 slides). Keys are bare PDF filenames. CRITICAL: Every physical PDF sheet (including progressive Beamer reveal overlays) MUST have an entry in pageMap without skipping or synthetic padding.",
+  "_file_naming_and_placement": {
+    "recommended_path": "Code/src/data/lecture_additions/<lecture_prefix>_slide_index.json",
+    "examples": [
+      "Code/src/data/lecture_additions/L1_slide_index.json",
+      "Code/src/data/lecture_additions/L2_slide_index.json"
+    ],
+    "rule": "Can be saved as a modular per-lecture file (e.g. 'L1_slide_index.json') inside 'Code/src/data/lecture_additions/' alongside the lecture's other addition files, or as a consolidated 'slides_index.json' in 'Code/src/data/'. The app automatically loads and merges all slide indexes into a single unified source."
+  },
   "markdown_and_latex_support": {
     "note": "ALL STRING FIELDS (title, author, description, pageMap[].title, pageMap[].section) SUPPORT GITHUB-FLAVORED MARKDOWN AND KATEX MATH ($inline$ or $$display$$).",
     "mandatory_json_backslash_rule": "CRITICAL: In JSON strings, the backslash '\\' is an escape character. Every LaTeX command MUST use double backslashes '\\\\'. Example: '$\\alpha$', '$\\text{ms}$', '$$\\frac{a}{b}$$', '$\\mathcal{O}(N \\log N)$'. Escape literal dollar signs in prose as \\$.",
     "code_and_math_rules": "Use backticks (`$var`) exclusively for code and variables; use dollar signs ($math$) exclusively for LaTeX math."
   },
   "_schema_field_definitions": {
-    "id": "String. Unique kebab-case identifier used for internal system references and citations.",
-    "title": "MARKDOWN & LATEX STRING FIELD. Full descriptive title of the lecture deck.",
+    "id": "String. Unique kebab-case identifier used for internal citations and jumps.",
+    "lecture_index": "Integer, String, or Null. Sequence number or index of the lecture in the course (e.g. 1, 2, 3, or 'L1'). Keep 'title' focused on the actual subject topic (e.g. 'Comparing Alternatives and One-Way ANOVA' rather than 'Lecture 3: Comparing Alternatives and One-Way ANOVA'); the app automatically formats and displays the lecture index.",
+    "title": "MARKDOWN & LATEX STRING FIELD. Full canonical title of the lecture (clean topic title without duplicate 'Lecture X:' prefix if lecture_index is supplied).",
     "author": "MARKDOWN & LATEX STRING FIELD. Instructor(s), department, or institution.",
-    "description": "MARKDOWN & LATEX STRING FIELD. 1-2 sentence synopsis of key concepts covered.",
-    "total_slides": "Integer. Total physical sheets in the PDF.",
-    "total_pages": "Integer or Null. Total numbered presentation slides, or null if unnumbered.",
-    "pageMap": "Array of SlideNode objects. Strictly sequential: slide 1 to total_slides.",
-    "pageMap[].slide": "Integer. Physical sheet number (1-indexed).",
-    "pageMap[].page": "Integer or Null. Logical/printed slide number on the slide.",
-    "pageMap[].title": "MARKDOWN & LATEX STRING FIELD. Disambiguated, meaningful slide topic title.",
+    "description": "MARKDOWN & LATEX STRING FIELD. 1-2 sentence synopsis of core concepts.",
+    "total_slides": "Integer. Total physical sheets in the PDF file (len(pdf.pages)).",
+    "total_pages": "Integer or Null. Highest printed slide number, or null if unnumbered.",
+    "pageMap": "Array of SlideNode objects. Strictly sequential: physical slide 1 to total_slides.",
+    "pageMap[].slide": "Integer. Physical sheet number in the PDF (1-indexed).",
+    "pageMap[].page": "Integer or Null. Logical/printed slide number on the slide (overlays share the same number).",
+    "pageMap[].title": "MARKDOWN & LATEX STRING FIELD. Specific, disambiguated slide title capturing the newly revealed content.",
     "pageMap[].section": "MARKDOWN & LATEX STRING FIELD. Module or thematic group name."
   },
   "Lecture03_Comparisons_and_ANOVA.pdf": {
     "id": "lec03-comparisons-anova",
-    "title": "Lecture 3: Comparing Alternatives and One-Way ANOVA",
+    "lecture_index": 3,
+    "title": "Comparing Alternatives and One-Way ANOVA",
     "author": "Department of Computer Science",
     "description": "Statistical evaluation of system performance comparing two or more alternatives using unpaired and paired t-tests, confidence intervals, and one-way ANOVA.",
     "total_slides": 36,
@@ -65,25 +75,25 @@
       {
         "slide": 7,
         "page": 6,
-        "title": "Paired t-Test Formulation and Degrees of Freedom",
+        "title": "Paired t-Test: Step 1 (Difference Calculation $d_i = x_{1,i} - x_{2,i}$)",
         "section": "Paired Comparisons"
       },
       {
         "slide": 8,
+        "page": 6,
+        "title": "Paired t-Test: Step 2 (Confidence Interval Formulation on $\\bar{d}$)",
+        "section": "Paired Comparisons"
+      },
+      {
+        "slide": 9,
         "page": 7,
         "title": "Example: Compiler Optimization Runtimes with Paired Differences",
         "section": "Paired Comparisons"
       },
       {
-        "slide": 9,
+        "slide": 10,
         "page": 8,
         "title": "Introduction to One-Way ANOVA: $k \\ge 3$ Alternatives",
-        "section": "One-Way ANOVA"
-      },
-      {
-        "slide": 10,
-        "page": 9,
-        "title": "Sum of Squares Decomposition: $SS_T = SS_A + SS_E$",
         "section": "One-Way ANOVA"
       }
     ]
